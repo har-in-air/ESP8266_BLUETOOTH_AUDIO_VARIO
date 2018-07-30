@@ -9,7 +9,7 @@ If you're looking for algorithm improvements to the ESP8266_MPU9250_MS5611_VARIO
 * PCB design intended to be integrated with an off-the-shelf, cheap single-cell 18650 power bank case. 
 * Option for Bluetooth transmission of LK8EX1 sentences using an HM-11 module. So you can use XCTrack 
 or other flight instrument software on a smartphone/tablet and get accurate barometric pressure, barometric altitude and climbrate/sinkrate data.
-* Optional  high-current push-pull drive with L9110S with conventional loudspeakers for higher volume. 
+* Optional  high-current push-pull drive using L9110S with conventional loudspeakers for higher volume. 
 * Optional torch/lantern mode using a 0.5W white led with variable dimming and SOS flasher.
 * Optional motion alarm mode (helps to have the loudspeaker drive components populated)
 * Over-the-air (OTA) firmware updates with the unit acting as WiFi access point and webpage server. If you have an updated
