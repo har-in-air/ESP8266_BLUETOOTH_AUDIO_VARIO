@@ -65,7 +65,7 @@ You can use flexible silicone  to seal the edge of the speaker to the pcb, that 
 Put some soft foam tape on the back of the speaker so the vibrations don't get transmitted 
 to the pcb and affect the MPU9250 or the MS5611.
 
-Replacement speakerphone drivers for mobile phones are a good choice (make sure it's described as a speakerphone driver, not an earpiece). You can put two in series for a 16ohm impedance, make sure they are in phase though.
+Replacement speakerphone drivers for mobile phones are a good choice (make sure it's described as a speakerphone driver, not a earpiece). You can put two in series for a 16ohm impedance, make sure they are in phase though.
 
 A few components may not be readily available on Aliexpress/Ebay. You can find them on Mouser/Digikey.
 
@@ -84,3 +84,6 @@ I used grounded adhesive copper foil on top of kapton tape to shield the CJMCU-1
 This is to provide EMI interference shielding as well as to prevent light from hitting the MS5611.
 I put a small 4mm long piece of thin plastic hookup wire on top of the MS5611 across the middle, 
 to prevent the kapton tape from sealing the air holes on the ms5611 when you press on the foil.
+
+## Software Notes
+TBD
