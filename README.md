@@ -56,7 +56,7 @@ lines on the silkscreen mask as guide for this. Then you will have a smaller pcb
 
 You can first test the board with just the direct connection from AUD pin to the piezo and the other piezo
 pin connected to ground. You will have to put solder on the jumpers to select this.
-If the volume is enough for you, e.g. if you mount the vario on your shoulder and have an open-face helmet, there's no need to add the L9110s circuit. If you want push-pull drive for more volume with a piezo, add the L9110S circuit. 
+If the volume is enough for you, e.g. if you mount the vario on your shoulder and/or have an open-face helmet, there's no need to add the L9110S circuit. If you want push-pull drive for more volume with a piezo, add the L9110S circuit. 
 
 If you want loud volume, use a magnetic loudspeaker, at least 8 ohms, preferably 16ohm or 32ohm but they are not easy to find. Make sure you use at least 47 ohm resistor for R5 to keep the current pulses manageable. 
 If you use a loudspeaker, make sure it has an enclosure, i.e. there should be no air path from front of speaker 
@@ -70,16 +70,17 @@ Replacement speakerphone drivers for mobile phones are a good choice (make sure 
 A few components may not be readily available on Aliexpress/Ebay. You can find them on Mouser/Digikey.
 
 * Ferrite bead for the CJMCU-117 power supply filter 600ohms@100MHz :  BLM18AG601SN1D
+* TI TPS22918 power switch 
 * Broadband piezo speaker : PUI Audio AT2310TLW100R 
 * Power switch : ALPS SSSS916400 (good quality, expensive) or SK12D07 (ebay, cheap, cut off the end lugs).
 * For torch leds up to 0.5W, you can populate one of R1, R2 and use a 22ohm 2512 0.5W package. For higher wattage LEDs, add the second resistor in parallel. 
 
-The ESP8266 has internal bootstrap pullup requirements for some of the GPIO pins which cause circuit quirks on reset and during ROM boot - e.g. you will find the torch LED comes on at full brightness when you press the reset button or put the ESP8266 into program mode.
+The ESP8266 has internal bootstrap pullup/pulldown requirements for some of the GPIO pins which cause circuit quirks on reset and during ROM boot - e.g. you will find the torch LED comes on at full brightness when you press the reset button or put the ESP8266 into program mode.
 
-The silkscreen markings for the ESP8266 uart are for the connecting dongle. So the RXD connection should be connected to the RX pin on the FT232RL/CH340/CP2102 module, TXD to the TX pin. Similarly, the silkscreen markings for the HM-11 connection are for the HM-11 module. So the BTRX pad should be connected to the RX pin on the HM-11.  The KEY pad can be momentarily shorted
-to ground for a couple seconds to put  the HM-11 into factory default state, if required.
+The silkscreen markings for the ESP8266 uart are for the connecting dongle. RXD should be connected to the RX pin on the FT232RL/CH340/CP2102 module, and TXD to the TX pin. Similarly, the silkscreen markings for the HM-11 connection are for the HM-11 module. The BTRX pad should be connected to the RX pin on the HM-11.  The KEY pad can be momentarily shorted
+to ground for a couple seconds to reset the HM-11 with factory default settings, if required.
 
 I used grounded adhesive copper foil on top of kapton tape to shield the CJMCU-117 board.
-This is to provide EMI interference shielding as well as to prevent light from hitting the ms5611.
-I put a small 4mm long piece of thin plastic hookup wire on top of the ms5611 across the middle, 
+This is to provide EMI interference shielding as well as to prevent light from hitting the MS5611.
+I put a small 4mm long piece of thin plastic hookup wire on top of the MS5611 across the middle, 
 to prevent the kapton tape from sealing the air holes on the ms5611 when you press on the foil.
