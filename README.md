@@ -17,6 +17,7 @@ binary file, you can upload it with a web browser using a smartphone/laptop in t
 * Requires ESP-12E/F module as it has 4Mbytes flash, needed for OTA updates
 
 ## What's been continued from the ESP8266_MPU9250_MS5611_VARIO project
+* Arduino software development environment
 * CJMCU-117 10-DOF module with MPU9250 and MS5611 sensors
 * Accurate, fast responding variometer using Kalman filter fusion of accelerometer and pressure sensor data
 * WiFi configuration with a webpage with the vario acting as an access point and webpage server.
