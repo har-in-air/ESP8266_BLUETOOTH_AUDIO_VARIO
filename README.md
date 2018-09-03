@@ -47,8 +47,7 @@ The 10K I2C pullup resistors on the CJMCU-117 board should be replaced with 3.3K
 The TLV75533 3.3V LDO regulator has a high current rating of 500mA and is suitable for the ESP8266 power supply, which has high current spikes > 350mA on wifi transmit bursts. You can use it for both LDO regulators on the board. The reason I used a cheaper, more readily available XC6219 3.3V LDO regulator for the HM-11 is because the bluetooth module current draw is  < 25mA.
 
 The optional circuit components are marked with dashes on the schematic. Do not populate them if 
-you don't want the torch option or the bluetooth option or the L9110s loud(er) speaker option. There's no need to
-modify the software if you do this.
+you don't want the torch option or the bluetooth option or the L9110s loud(er) speaker option. 
 
 You can shorten the pcb in that case, removing the hm-11 side. Or even cut off the pcb side 
 for the piezo if you drive the piezo directly from the esp8266 without the L9110s push-pull drive. There are two vertical
