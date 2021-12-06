@@ -90,33 +90,45 @@ void IRAM_ATTR btn_debounce() {
    }
 
 
-// voltage divider with 12K and 3.3K to scale 4.2V down to < 1.0V for the ESP8266 ADC
-// actual measurement 0.84V with battery voltage = 3.91V 
-// => actual scale up from resistive divider = 3.91/0.84 = 4.65
-// ESP8266 adc is inaccurate, 0.84V input <-> adcsample 911 = 911/1023 = 0.89V
-// fudge factor of 0.84/0.89 = 0.94f
-#define adc2bv(adcSample)  ( (((float)adcSample)*0.94f*4.65f)/1023.0f ) 
 
+int adc_sampleAverage(int nSamples) {
+  int adcSample = 0;
+  for (int inx = 0; inx < 4; inx++) {
+    adcSample += analogRead(A0);
+    delay(1);
+    }
+  adcSample /= 4;
+  return adcSample;  
+  }
+
+// voltage divider with 12K and 3.3K to scale 4.2V down to < 1.0V for the ESP8266 ADC
+// calibrate slope & intercept with two test points
+#define V1  3.286f
+#define V2  4.050f
+#define ADC1  765.0f
+#define ADC2  932.0f
+
+float battery_voltage(int sample) {
+  float slope = (V2 - V1)/(ADC2 - ADC1);
+  float voltage = slope*(sample - ADC1) + V1;
+  return voltage;
+  }
+  
 void battery_IndicateVoltage() {
    int numBeeps;
-	int adcSample = 0;
-	for (int inx = 0; inx < 4; inx++) {
-		adcSample += analogRead(A0);
-		delay(1);
-		}
-	adcSample /= 4;
-   int bv = (int) (adc2bv(adcSample)*10.0f + 0.5f);
+   int adcSample = adc_sampleAverage(4);
+   float fbv = battery_voltage(adcSample);
 #ifdef MAIN_DEBUG   
-   Serial.printf("\r\nBattery adcsample = %d voltage = %d.%dV\r\n", adcSample, bv/10, bv%10 );
+   Serial.printf("\r\nBattery voltage = %.2fV\r\n", fbv );
 #endif
 
-   if (bv >= 40) numBeeps = 5;
+   if (fbv >= 4.0f) numBeeps = 5;
    else
-   if (bv >= 39) numBeeps = 4;
+   if (fbv >= 3.9f) numBeeps = 4;
    else
-   if (bv >= 37) numBeeps = 3;
+   if (fbv >= 3.7f) numBeeps = 3;
    else
-   if (bv >= 36) numBeeps = 2;
+   if (fbv >= 3.6f) numBeeps = 2;
    else  numBeeps = 1;
    while (numBeeps--) {
       audio_GenerateTone(BATTERY_TONE_HZ, 300);
@@ -140,7 +152,7 @@ static uint8_t btserial_nmeaChecksum(const char *szNMEA){
 void btserial_transmitSentence() {
    char szmsg[40];
    int  adcSample = analogRead(A0);
-   float batteryVoltage = adc2bv(adcSample);
+   float batteryVoltage = battery_voltage(adcSample);
    sprintf(szmsg, "$LK8EX1,%d,99999,%d,99,%.1f*", (uint32_t)(baro.paSample_+0.5f), audioCps, batteryVoltage);
    uint8_t cksum = btserial_nmeaChecksum(szmsg);
    char szcksum[5];
@@ -517,7 +529,15 @@ void setup() {
     setupConfig(); 
     }
   else {
+#if 1
     battery_IndicateVoltage();
+#else // to calibrate adc-voltage slope/intercept
+    while (1){
+      int adc = adc_sampleAverage(4);
+      Serial.println(adc);
+      delay(500);
+      }
+#endif
     switch (appMode) {
       case APP_MODE_VARIO :
       default :
