@@ -1,15 +1,10 @@
 #include <Arduino.h>
 #include <math.h>
+#include "config.h"
 #include "kalmanfilter4.h"
 
 static const char* TAG = "kalmanfilter4";
 
-// This is set low as the residual acceleration bias after calibration
-// is expected to have little variation/drift
-#define KF_ACCELBIAS_VARIANCE   0.005f
-
-// KF4 Acceleration Update variance default
-#define KF_ACCEL_UPDATE_VARIANCE   50.0f
 
 typedef struct KF4_STATE_ {
 	float z; // altitude

@@ -104,7 +104,13 @@
 // VARIO_INTERRUPT_BEEPS is enabled
 #define VARIO_DISCRIMINATION_THRESHOLD_CPS    25
 
-#define KF_ACCELBIAS_VARIANCE   1.0f
+// This is set low as the residual acceleration bias after calibration
+// is expected to have little variation/drift
+#define KF_ACCELBIAS_VARIANCE   0.005f
+
+// KF4 Acceleration Update variance default
+#define KF_ACCEL_UPDATE_VARIANCE   50.0f
+
 
 #define SLEEP_THRESHOLD_CPS    50
 
