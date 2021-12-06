@@ -17,7 +17,7 @@ binary file, you can upload it with a web browser using a smartphone/laptop in t
 * Requires ESP-12E/F module as it has 4Mbytes flash, needed for OTA updates
 
 ## What's been continued from the ESP8266_MPU9250_MS5611_VARIO project
-* Arduino software development environment
+* Arduino software development environment 
 * CJMCU-117 10-DOF module with MPU9250 and MS5611 sensors
 * Accurate, fast responding variometer using Kalman filter fusion of accelerometer and pressure sensor data
 * WiFi configuration with a webpage with the vario acting as an access point and webpage server.
@@ -85,4 +85,11 @@ I put a small 4mm long piece of thin plastic hookup wire on top of the MS5611 ac
 to prevent the kapton tape from sealing the air holes on the ms5611 when you press on the foil.
 
 ## Software Notes
-TBD
+
+* Arduino IDE 1.8.16
+  * 'Generic ESP8266 module'
+  * Flash Size : 4MB (FS:1MB OTA:~1019kB)
+  * CPU Frequency : 80MHz
+
+
+* Updated to use the latest KF4D kalman filter algorithm from ESP32_IMU_GPS_BARO_VARIO project.

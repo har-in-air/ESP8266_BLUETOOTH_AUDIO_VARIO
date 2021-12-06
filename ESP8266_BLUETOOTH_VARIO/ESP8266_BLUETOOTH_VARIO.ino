@@ -578,11 +578,9 @@ void vario_loop() {
       int zMeasurementAvailable = baro.SampleStateMachine(); 
       if ( zMeasurementAvailable ) { 
         // average earth-z acceleration over the 20mS interval between z samples
-        // z sample is from when pressure conversion was triggered, not read (i.e. 10mS ago). So we need to average
-        // the acceleration samples from the 20mS interval before that
-        //float zAccelAverage = ringbuf_AverageOldestSamples(10); 
-        float dt = kfTimeDeltaUSecs/1000000.0f;
+        // is used in the update stage
         float zAccelAverage = ringbuf_averageNewestSamples(10); 
+        float dt = kfTimeDeltaUSecs/1000000.0f;
         kalmanFilter4_predict(dt);
         kalmanFilter4_update(baro.zCmSample_, zAccelAverage, (float*)&kfAltitudeCm, (float*)&kfClimbrateCps);
         // reset time elapsed between kalman filter algorithm updates
