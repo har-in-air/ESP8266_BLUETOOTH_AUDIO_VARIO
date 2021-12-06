@@ -7,7 +7,7 @@
 #include "MahonyAHRS.h"
 #include "MPU9250.h"
 #include "MS5611.h"
-#include "KalmanVario.h"
+#include "kalmanfilter4.h"
 #include "VarioAudio.h"
 #include "cct.h"
 #include "nvd.h"
@@ -70,10 +70,9 @@ boolean bWebConfigure;
 
 MPU9250 imu;
 MS5611 baro;
-KalmanVario kf;
 VarioAudio vario;
 
-uint16_t FirmwareRevision = 93; // v0.93
+uint16_t FirmwareRevision = 0.94; // v0.94
 
 
 void btn_clear() {
@@ -82,7 +81,7 @@ void btn_clear() {
    }
 
 
-void btn_debounce() {
+void IRAM_ATTR btn_debounce() {
    BtnPGCCState = ((BtnPGCCState<<1) | ((uint32_t)BTN_PGCC()) );
    if ((BtnPGCCState | 0xFFFFFFF0) == 0xFFFFFFF8) {
      BtnPGCCPressed = true;
@@ -204,7 +203,7 @@ void indicateFaultMPU9250() {
 
 
 // handles data ready interrupt from MPU9250
-void drdy_InterruptHandler() {
+void IRAM_ATTR drdy_InterruptHandler() {
    drdyFlag = true;
    drdyCounter++;
 	}	
@@ -377,7 +376,8 @@ void setupVario() {
   Serial.println("\r\nKalmanFilter config");
 #endif  
   // initialize kalman filter with barometer estimated altitude, and climbrate = 0.0
-  kf.Config((float)nvd.params.kf.zMeasVariance, 1000.0f*(float)nvd.params.kf.accelVariance, KF_ACCELBIAS_VARIANCE, baro.zCmAvg_, 0.0f, 0.0f);
+  //kf.Config((float)nvd.params.kf.zMeasVariance, 1000.0f*(float)nvd.params.kf.accelVariance, KF_ACCELBIAS_VARIANCE, baro.zCmAvg_, 0.0f);
+  kalmanFilter4_configure((float)nvd.params.kf.zMeasVariance, 1000.0f*(float)nvd.params.kf.accelVariance, true, baro.zCmAvg_, 0.0f, 0.0f);
 
 #ifdef MAIN_DEBUG   
   Serial.println("\r\nVario beeper config");
@@ -390,7 +390,7 @@ void setupVario() {
   sleepTimeoutSecs = 0;
   // circular buffer of latest z-earth acceleration samples, needed to ensure we use the acceleration samples that are
   // in sync with the pressure-derived altitude samples
-  ringbuf_Init(); 
+  ringbuf_init(); 
   bluetoothCounter = 0;
   sleepCounter = 0;
 #ifdef MAIN_DEBUG   
@@ -565,10 +565,10 @@ void vario_loop() {
     // Acceleration data is only used for orientation correction when the acceleration magnitude is between 0.75G and 1.25G
     float accelMagnitudeSquared = accelmG[0]*accelmG[0] + accelmG[1]*accelmG[1] + accelmG[2]*accelmG[2];
     int bUseAccel = ((accelMagnitudeSquared > 562500.0f) && (accelMagnitudeSquared < 1562500.0f)) ? 1 : 0;
-    imu_MahonyAHRSupdate6DOF(bUseAccel,imuTimeDeltaUSecs/1000000.0f, DEG_TO_RAD(gyroDps[0]), DEG_TO_RAD(gyroDps[1]), -DEG_TO_RAD(gyroDps[2]), accelmG[1], accelmG[0], accelmG[2]);
+    imu_MahonyAHRSupdate6DOF(bUseAccel,imuTimeDeltaUSecs/1000000.0f, DEG_TO_RAD*gyroDps[0], DEG_TO_RAD*gyroDps[1], -DEG_TO_RAD*gyroDps[2], accelmG[1], accelmG[0], accelmG[2]);
 
     float gravityCompensatedAccel = imu_GravityCompensatedAccel(accelmG[1], accelmG[0], accelmG[2], q0, q1, q2, q3);
-    ringbuf_AddSample(gravityCompensatedAccel);  
+    ringbuf_addSample(gravityCompensatedAccel);  
 
     baroCounter++;
     kfTimeDeltaUSecs += imuTimeDeltaUSecs;
@@ -580,8 +580,11 @@ void vario_loop() {
         // average earth-z acceleration over the 20mS interval between z samples
         // z sample is from when pressure conversion was triggered, not read (i.e. 10mS ago). So we need to average
         // the acceleration samples from the 20mS interval before that
-        float zAccelAverage = ringbuf_AverageOldestSamples(10); 
-        kf.Update(baro.zCmSample_, zAccelAverage, kfTimeDeltaUSecs/1000000.0f, &kfAltitudeCm, &kfClimbrateCps);
+        //float zAccelAverage = ringbuf_AverageOldestSamples(10); 
+        float dt = kfTimeDeltaUSecs/1000000.0f;
+        float zAccelAverage = ringbuf_averageNewestSamples(10); 
+        kalmanFilter4_predict(dt);
+        kalmanFilter4_update(baro.zCmSample_, zAccelAverage, (float*)&kfAltitudeCm, (float*)&kfClimbrateCps);
         // reset time elapsed between kalman filter algorithm updates
         kfTimeDeltaUSecs = 0.0f;
         audioCps =  kfClimbrateCps >= 0.0f ? (int32_t)(kfClimbrateCps+0.5f) : (int32_t)(kfClimbrateCps-0.5f);
@@ -760,7 +763,3 @@ void loop(){
     } 
     
 	}
-
-
-
-

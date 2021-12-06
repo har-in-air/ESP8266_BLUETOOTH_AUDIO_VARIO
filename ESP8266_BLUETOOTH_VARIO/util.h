@@ -35,9 +35,9 @@ typedef union _un32 {
 #define MCORE(x,t)              {if (x > (t)) x -= (t); else if (x < -(t)) x += (t); else x = 0;}
 #define CORRECT(x,mx,mn)  		(((float)(x-mn)/(float)(mx-mn)) - 0.5f)
 
-#define M_PI 		  3.1415927f
-#define RAD_TO_DEG(r)   ((r)*57.29577951f)
-#define DEG_TO_RAD(d)   ((d)*0.017453292f)
+//#define M_PI 		  3.1415927f
+//#define RAD_TO_DEG(r)   ((r)*57.29577951f)
+//#define DEG_TO_RAD(d)   ((d)*0.017453292f)
 
 #define _180_DIV_PI         57.295779f
 #define PI_DIV_180          0.017453292f

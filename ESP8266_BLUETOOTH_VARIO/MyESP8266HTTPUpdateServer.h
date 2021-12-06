@@ -1,7 +1,8 @@
 #ifndef __MY_HTTP_UPDATE_SERVER_H
 #define __MY_HTTP_UPDATE_SERVER_H
 
-class ESP8266WebServer;
+//class ESP8266WebServer;
+#include <ESP8266WebServer.h>
 
 class MyESP8266HTTPUpdateServer
 {
