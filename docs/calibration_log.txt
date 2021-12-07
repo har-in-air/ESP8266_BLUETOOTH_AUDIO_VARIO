@@ -1,5 +1,4 @@
-
-ESP8266 BLUETOOTH VARIO compiled on Dec  7 2021 at 09:55:34
+ESP8266 BLUETOOTH VARIO compiled on Dec  7 2021 at 10:32:35
 Firmware Revision 0.95
 
 Checking non-volatile data (calibration and configuration)
@@ -14,7 +13,7 @@ until you hear a low-frequency tone start. Then release the button
 2
 1
 
-Battery voltage = 4.07V
+Battery voltage = 4.06V
 Vario mode
 
 Checking communication with MS5611
@@ -24,20 +23,20 @@ MS5611 OK
 
 Checking communication with MPU9250
 MPU9250 OK
-Error : uncalibrated accelerometer, manual calibration is now REQUIRED for vario operation !!
-When you hear the gyro calibration countdown, press the pgmconfcal button to force
-accelerometer calibration before gyro calibration.
 Calibration parameters from NVD
 Accel : axBias 0, ayBias 0, azBias 0
 Gyro : gxBias 0, gyBias 0, gzBias 0
+Error : uncalibrated accelerometer, manual calibration is now REQUIRED for vario operation !!
+When you hear the gyro calibration countdown, press the pgmconfcal button to force
+accelerometer calibration before gyro calibration.
 Counting down to gyro calibration
-Press the pgmconfcal button to enforce accelerometer calibration
+Press the PGM/CONF/CAL button to enforce accelerometer calibration first
 10
 9
-8
+PGM/CONF/CAL button pressed
 Manual accelerometer calibration requested
 Place vario on a level surface with accelerometer z axis vertical and leave it undisturbed
-You have 10 seconds, counted down with rapid beeps
+You have 10 seconds, counted down with rapid beeps from 50 to 0
 50
 49
 48
@@ -90,24 +89,24 @@ You have 10 seconds, counted down with rapid beeps
 1
 
 Calibrating accelerometer
-ax = -219  ay = -62  az = 8269
-axBias = -219
-ayBias = -62
-azBias = 77
+ax = -199  ay = -58  az = 8266
+axBias = -199
+ayBias = -58
+azBias = 74
 Accelerometer calibration done
 
 Calibrating gyro
 Num Tries = 1
 gxBias = 23
 gyBias = -12
-gzBias = 23
+gzBias = 22
 Gyro calibration OK
 
 MS5611 config
 MS5611 Calibration Coeffs : 48939 50595 29263 26380 30963 26826
 Tavg : 29C
-Pavg : 91517Pa
-Zavg : 85045cm
+Pavg : 91491Pa
+Zavg : 85279cm
 
 KalmanFilter config
 
@@ -118,4 +117,3 @@ sinkToneCps = -200
 crossoverCps = 400
 
 Start vario
-

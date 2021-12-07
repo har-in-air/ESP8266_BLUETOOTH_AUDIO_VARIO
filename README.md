@@ -21,6 +21,8 @@ binary file, you can upload it with a web browser using a smartphone/laptop in t
 * CJMCU-117 10-DOF module with MPU9250 and MS5611 sensors
 * Accurate, fast responding variometer using Kalman filter fusion of accelerometer and pressure sensor data
 * WiFi configuration with a webpage with the vario acting as an access point and webpage server.
+<br>
+<img src="docs/wifi_config_webpage.png">
 
 ## Hardware Notes
 
@@ -49,22 +51,18 @@ The TLV75533 3.3V LDO regulator has a high current rating of 500mA and is suitab
 The optional circuit components are marked with dashes on the schematic. Do not populate them if 
 you don't want the torch option or the bluetooth option or the L9110s loud(er) speaker option. 
 
-You can shorten the pcb in that case, removing the hm-11 side. Or even cut off the pcb side 
-for the piezo if you drive the piezo directly from the esp8266 without the L9110s push-pull drive. There are two vertical
-lines on the silkscreen mask as guide for this. Then you will have a smaller pcb for a simple audiovario like the original ESP8266_MPU9250_MS5611_VARIO project. There are two pads for the piezo connection close to the ESP-12E (TP1, TP2 in the schematic) if you choose to do this.
-
-You can first test the board with just the direct connection from AUD pin to the piezo and the other piezo
+You can first test the board with a direct connection from AUD pin to a piezo speaker and the other piezo
 pin connected to ground. You will have to put solder on the jumpers to select this.
-If the volume is enough for you, e.g. if you mount the vario on your shoulder and/or have an open-face helmet, there's no need to add the L9110S circuit. If you want push-pull drive for more volume with a piezo, add the L9110S circuit. 
+If you mount the vario on your shoulder and/or have an open-face helmet, maybe the volume level is enough without populating the L9110S push-pull driver circuit.
 
-If you want loud volume, use a magnetic loudspeaker, at least 8 ohms, preferably 16ohm or 32ohm but they are not easy to find. Make sure you use at least 47 ohm resistor for R5 to keep the current pulses manageable. 
-If you use a loudspeaker, make sure it has an enclosure, i.e. there should be no air path from front of speaker 
-to back or else it will sound as weak as the piezo - the front wave will cancel the back wave. 
+If you want louder audio, add the L9110s circuit option. If this is still not loud enough, use a magnetic coil loudspeaker. At least 8 ohms impedance, preferably 16ohm or 32ohm. Make sure you use at least a 47 ohm resistor for R5 to keep current pulses manageable. 
+If you use a loudspeaker, make sure there is no air path from front of speaker 
+to back or else the front wave will cancel the back wave. 
 You can use flexible silicone  to seal the edge of the speaker to the pcb, that will do the job. 
-Put some soft foam tape on the back of the speaker so the vibrations don't get transmitted 
-to the pcb and affect the MPU9250 or the MS5611.
+Put some soft foam tape on the back of the speaker so that vibrations don't get transmitted 
+to the MPU9250 or MS5611.
 
-Replacement speakerphone drivers for mobile phones are a good choice (make sure it's described as a speakerphone driver, not a earpiece). You can put two in series for a 16ohm impedance, make sure they are in phase though.
+Replacement speakerphone (NOT earpiece) drivers for mobile phones are a good choice.  You can put two in series for 16ohms impedance, make sure they are in phase.
 
 A few components may not be readily available on Aliexpress/Ebay. You can find them on Mouser/Digikey.
 
@@ -79,10 +77,9 @@ The ESP8266 has internal bootstrap pullup/pulldown requirements for some of the 
 The silkscreen markings for the ESP8266 uart are for the connecting dongle. RXD should be connected to the RX pin on the FT232RL/CH340/CP2102 module, and TXD to the TX pin. Similarly, the silkscreen markings for the HM-11 connection are for the HM-11 module. The BTRX pad should be connected to the RX pin on the HM-11.  The KEY pad can be momentarily shorted
 to ground for a couple seconds to reset the HM-11 with factory default settings, if required.
 
-I used grounded adhesive copper foil on top of kapton tape to shield the CJMCU-117 board.
-This is to provide EMI interference shielding as well as to prevent light from hitting the MS5611.
-I put a small 4mm long piece of thin plastic hookup wire on top of the MS5611 across the middle, 
-to prevent the kapton tape from sealing the air holes on the ms5611 when you press on the foil.
+Current draw operating as audio vario without bluetooth transmission is ~27mA. 
+
+Current draw operating as audio vario with bluetooth LK8EX1 message transmission @ 10Hz is ~37mA. 
 
 ## Software Notes
 
@@ -94,4 +91,5 @@ to prevent the kapton tape from sealing the air holes on the ms5611 when you pre
 * The first time you flash the ESP8266, select the Arduino IDE -> Tools -> "Erase Flash : All flash contents". This will ensure the non-volatile data area reserved for saving options is cleared - this includes accelerometer
 and gyroscope calibration parameters. When you turn on the unit, ensure the serial debug monitor is visible. You will see the calibration message, follow the prompts to enforce calibration of both accelerometer and gyroscope.
 [Here is an example of a log of serial debug monitor messages after a full flash erase.](docs/calibration_log.txt). Remember to switch back to "Erase Flash: Only sketch" after calibration is complete.
+
 * Updated to use the latest KF4D kalman filter algorithm from ESP32_IMU_GPS_BARO_VARIO project.

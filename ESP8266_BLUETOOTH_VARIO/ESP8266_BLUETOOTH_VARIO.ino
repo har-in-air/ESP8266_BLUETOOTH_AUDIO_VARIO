@@ -277,6 +277,9 @@ void setupVario() {
     Serial.println("MPU9250 OK");
 #endif
   
+  
+  // load the accel & gyro calibration parameters from the non-volatile data structure
+  imu.GetCalibrationParams(&nvd);
   if ((nvd.params.calib.axBias == 0) && (nvd.params.calib.ayBias == 0) && (nvd.params.calib.azBias == 0)) {
 #ifdef MAIN_DEBUG   
     Serial.println("Error : uncalibrated accelerometer, manual calibration is now REQUIRED for vario operation !!");
@@ -287,9 +290,6 @@ void setupVario() {
     Serial.println("accelerometer calibration before gyro calibration.");
 #endif    
     }
-    
-  // load the accel & gyro calibration parameters from the non-volatile data structure
-  imu.GetCalibrationParams(&nvd);
   
   drdyCounter = 0;
   drdyFlag = 0;
@@ -315,7 +315,7 @@ void setupVario() {
   boolean bCalibrateAccelerometer = false;
 #ifdef MAIN_DEBUG
   Serial.println("Counting down to gyro calibration");
-  Serial.println("Press the pgmconfcal button to enforce accelerometer calibration");
+  Serial.println("Press the PGM/CONF/CAL button to enforce accelerometer calibration first");
 #endif  
   for (int inx = 0; inx < 10; inx++) {
     delay(500); 
@@ -325,6 +325,7 @@ void setupVario() {
     audio_GenerateTone(CALIBRATING_TONE_HZ, 50); 
     if (digitalRead(pinPgmConfCalBtn) == 0) {
        bCalibrateAccelerometer = true;
+       Serial.println("PGM/CONF/CAL button pressed");
        break;
       }
     }
@@ -334,7 +335,7 @@ void setupVario() {
 #ifdef MAIN_DEBUG   
     Serial.println("Manual accelerometer calibration requested");
     Serial.println("Place vario on a level surface with accelerometer z axis vertical and leave it undisturbed");
-    Serial.println("You have 10 seconds, counted down with rapid beeps");
+    Serial.println("You have 10 seconds, counted down with rapid beeps from 50 to 0");
 #endif
     for (int inx = 0; inx < 50; inx++) {
       delay(200); 
