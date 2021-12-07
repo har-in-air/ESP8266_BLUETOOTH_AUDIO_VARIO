@@ -91,5 +91,7 @@ to prevent the kapton tape from sealing the air holes on the ms5611 when you pre
   * Flash Size : 4MB (FS:1MB OTA:~1019kB)
   * CPU Frequency : 80MHz
 
-
+* The first time you flash the ESP8266, select the Arduino IDE -> Tools -> "Erase Flash : All flash contents". This will ensure the non-volatile data area reserved for saving options is cleared - this includes accelerometer
+and gyroscope calibration parameters. When you turn on the unit, ensure the serial debug monitor is visible. You will see the calibration message, follow the prompts to enforce calibration of both accelerometer and gyroscope.
+[Here is an example of a log of serial debug monitor messages after a full flash erase.](docs/calibration_log.txt)
 * Updated to use the latest KF4D kalman filter algorithm from ESP32_IMU_GPS_BARO_VARIO project.

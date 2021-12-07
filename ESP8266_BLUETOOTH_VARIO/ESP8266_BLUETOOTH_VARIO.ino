@@ -72,7 +72,7 @@ MPU9250 imu;
 MS5611 baro;
 VarioAudio vario;
 
-uint16_t FirmwareRevision = 0.94; // v0.94
+uint16_t FirmwareRevision = 95;
 
 
 void btn_clear() {
@@ -174,13 +174,12 @@ void goToSleep() {
 	}
 
 	
-// if imu calibration data in flash was never initialized or is corrupt, the accel 
-// and gyro biases are set to 0, and this uncalibrated state is indicated with a 
-// continuous sequence of alternating high and low beeps for 10 seconds.
-// !! You must manually calibrate the accelerometer if you hear this alarm, it is
-// !! required for normal vario operation.
+// !! Accelerometer calibration is REQUIRED for normal vario operation. !!
+// If flash was completely erased, or imu calibration data in flash was never initialized, or 
+// imu calibration data is corrupt, the accel and gyro biases are set to 0. Uncalibrated 
+// state is indicated with a continuous sequence of alternating high and low beeps for 5 seconds.
 void indicateUncalibratedAccelerometerGyro() {
-	for (int cnt = 0; cnt < 10; cnt++) {
+	for (int cnt = 0; cnt < 5; cnt++) {
 		audio_GenerateTone(UNCALIBRATED_TONE_HZ, 500); 
 		audio_GenerateTone(UNCALIBRATED_TONE_HZ/2, 500);
 		}
@@ -279,11 +278,13 @@ void setupVario() {
 #endif
   
   if ((nvd.params.calib.axBias == 0) && (nvd.params.calib.ayBias == 0) && (nvd.params.calib.azBias == 0)) {
-    indicateUncalibratedAccelerometerGyro(); 
 #ifdef MAIN_DEBUG   
     Serial.println("Error : uncalibrated accelerometer, manual calibration is now REQUIRED for vario operation !!");
+#endif    
+    indicateUncalibratedAccelerometerGyro(); 
+#ifdef MAIN_DEBUG   
     Serial.println("When you hear the gyro calibration countdown, press the pgmconfcal button to force");    
-    Serial.println("accelerometer calibration as well as gyro calibration");    
+    Serial.println("accelerometer calibration before gyro calibration.");
 #endif    
     }
     
@@ -314,7 +315,7 @@ void setupVario() {
   boolean bCalibrateAccelerometer = false;
 #ifdef MAIN_DEBUG
   Serial.println("Counting down to gyro calibration");
-  Serial.println("Press the pgmconfcal button if accelerometer calibration is also required");
+  Serial.println("Press the pgmconfcal button to enforce accelerometer calibration");
 #endif  
   for (int inx = 0; inx < 10; inx++) {
     delay(500); 
@@ -492,7 +493,7 @@ void setup() {
 
 #ifdef MAIN_DEBUG    
   Serial.begin(115200);
-  Serial.printf("\r\nESP8266 BLUETOOTH VARIO compiled on %s at %s\r\n", __DATE__, __TIME__);
+  Serial.printf("\r\n\r\nESP8266 BLUETOOTH VARIO compiled on %s at %s\r\n", __DATE__, __TIME__);
   Serial.printf("Firmware Revision %d.%02d\r\n", FirmwareRevision/100, FirmwareRevision%100);
 #endif
 #ifdef MAIN_DEBUG    
