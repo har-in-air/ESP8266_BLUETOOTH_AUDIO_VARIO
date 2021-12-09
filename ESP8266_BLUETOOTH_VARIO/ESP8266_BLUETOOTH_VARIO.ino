@@ -72,7 +72,7 @@ MPU9250 imu;
 MS5611 baro;
 VarioAudio vario;
 
-uint16_t FirmwareRevision = 95;
+uint16_t FirmwareRevision = 96;
 
 
 void btn_clear() {
@@ -104,8 +104,8 @@ int adc_sampleAverage(int nSamples) {
 // voltage divider with 12K and 3.3K to scale 4.2V down to < 1.0V for the ESP8266 ADC
 // calibrate slope & intercept with two test points
 #define V1  3.286f
-#define V2  4.050f
 #define ADC1  765.0f
+#define V2  4.050f
 #define ADC2  932.0f
 
 float battery_voltage(int sample) {
@@ -153,7 +153,8 @@ void btserial_transmitSentence() {
    char szmsg[40];
    int  adcSample = analogRead(A0);
    float batteryVoltage = battery_voltage(adcSample);
-   sprintf(szmsg, "$LK8EX1,%d,99999,%d,99,%.1f*", (uint32_t)(baro.paSample_+0.5f), audioCps, batteryVoltage);
+   int altitudeM =  kfAltitudeCm > 0.0f ? (int)((kfAltitudeCm+50.0f)/100.0f) :(int)((kfAltitudeCm-50.0f)/100.0f);
+   sprintf(szmsg, "$LK8EX1,999999,%d,%d,99,%.1f*",altitudeM, audioCps, batteryVoltage);
    uint8_t cksum = btserial_nmeaChecksum(szmsg);
    char szcksum[5];
    sprintf(szcksum,"%02X\r\n", cksum);
@@ -408,7 +409,12 @@ void setupVario() {
   bluetoothCounter = 0;
   sleepCounter = 0;
 #ifdef MAIN_DEBUG   
-  Serial.println("\r\nStart vario");
+  if (nvd.params.misc.bluetoothRateHz > 0 ){
+    Serial.printf("\r\nStart vario with bluetooth LK8EX1 messages @ %dHz\r\n", nvd.params.misc.bluetoothRateHz);
+    }
+  else {
+   Serial.println("\r\nStart vario with bluetooth disabled\r\n");  
+  }
 #endif
   }
 

@@ -80,7 +80,7 @@ void wificonfig_GeneratePage() {
   szPageContent += "Crossover climbrate [300 ... 800] <INPUT type=\"number\" name=\"varioCrossoverCps\" value=\"" + szVarioCrossoverCps + "\">cm/s<BR>";
  
   szPageContent += "</fieldset><fieldset><legend>Kalman Filter</legend>";
-  szPageContent += "Acceleration Variance [1 ... 100] <INPUT type=\"number\" name=\"kfAccelVar\" value=\"" + szKFAccelVariance + "\"><BR>";
+  szPageContent += "Acceleration Variance [50 ... 150] <INPUT type=\"number\" name=\"kfAccelVar\" value=\"" + szKFAccelVariance + "\"><BR>";
   szPageContent += "Altitude Noise Variance [100 ... 500] <INPUT type=\"number\" name=\"kfZMeasVar\" value=\"" + szKFZMeasVariance + "\"><BR>";
   
   szPageContent += "</fieldset><fieldset><legend>Motion Alarm</legend>";
