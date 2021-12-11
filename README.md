@@ -33,11 +33,8 @@ flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tabl
 [EasyEDA online visualization](https://gerber-viewer.easyeda.com/showcase) of PCB layout. 
 
 <img src="hw/esp8266_bluetooth_vario_top.png">
-<br>
-<br>
+
 <img src="hw/esp8266_bluetooth_vario_bot.png">
-<br>
-<br>
 
 ## Hardware Notes
 
