@@ -3,19 +3,24 @@
 #include "util.h"
 
 //#define twoKpDef	(2.0f * 0.5f)	// 2 * proportional gain
-#define twoKpDef  (2.0f * 5.0f) // 2 * proportional gain
-#define twoKiDef	(2.0f * 0.0f)	// 2 * integral gain
+#define twoKpDef (2.0f * 5.0f) // 2 * proportional gain
+#define twoKiDef (2.0f * 0.0f)	// 2 * integral gain
 
-
-volatile float twoKp = twoKpDef;											// 2 * proportional gain (Kp)
-volatile float twoKi = twoKiDef;											// 2 * integral gain (Ki)
-volatile float q0 = 1.0f, q1 = 0.0f, q2 = 0.0f, q3 = 0.0f;					// quaternion of sensor frame relative to auxiliary frame
-volatile float integralFBx = 0.0f,  integralFBy = 0.0f, integralFBz = 0.0f;	// integral error terms scaled by Ki
+volatile float twoKp = twoKpDef; // 2 * proportional gain (Kp)
+volatile float twoKi = twoKiDef; // 2 * integral gain (Ki)
+// quaternion of sensor frame relative to auxiliary frame
+volatile float Q0 = 1.0f;
+volatile float Q1 = 0.0f;
+volatile float Q2 = 0.0f;
+volatile float Q3 = 0.0f;					
+volatile float integralFBx = 0.0f;
+volatile float integralFBy = 0.0f;
+volatile float integralFBz = 0.0f;	// integral error terms scaled by Ki
 
 
 void imu_MahonyAHRSupdate9DOF(int bUseAccel, int bUseMag, float dt, float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz) {
 	float invNorm;
-  float q0q0, q0q1, q0q2, q0q3, q1q1, q1q2, q1q3, q2q2, q2q3, q3q3;  
+  	float q0q0, q0q1, q0q2, q0q3, q1q1, q1q2, q1q3, q2q2, q2q3, q3q3;  
 	float hx, hy, bx, bz;
 	float halfvx, halfvy, halfvz, halfwx, halfwy, halfwz;
 	float halfex, halfey, halfez;
@@ -25,7 +30,7 @@ void imu_MahonyAHRSupdate9DOF(int bUseAccel, int bUseMag, float dt, float gx, fl
 	if(!bUseMag) {
 		imu_MahonyAHRSupdate6DOF(bUseAccel,dt, gx, gy, gz, ax, ay, az);
 		return;
-	}
+		}
 
 	if(bUseAccel) {
 		// Normalise accelerometer measurement
@@ -41,16 +46,16 @@ void imu_MahonyAHRSupdate9DOF(int bUseAccel, int bUseMag, float dt, float gx, fl
 		mz *= invNorm;   
 
         // Auxiliary variables to avoid repeated arithmetic
-        q0q0 = q0 * q0;
-        q0q1 = q0 * q1;
-        q0q2 = q0 * q2;
-        q0q3 = q0 * q3;
-        q1q1 = q1 * q1;
-        q1q2 = q1 * q2;
-        q1q3 = q1 * q3;
-        q2q2 = q2 * q2;
-        q2q3 = q2 * q3;
-        q3q3 = q3 * q3;   
+        q0q0 = Q0 * Q0;
+        q0q1 = Q0 * Q1;
+        q0q2 = Q0 * Q2;
+        q0q3 = Q0 * Q3;
+        q1q1 = Q1 * Q1;
+        q1q2 = Q1 * Q2;
+        q1q3 = Q1 * Q3;
+        q2q2 = Q2 * Q2;
+        q2q3 = Q2 * Q3;
+        q3q3 = Q3 * Q3;   
 
         // Reference direction of Earth's magnetic field
         hx = 2.0f * (mx * (0.5f - q2q2 - q3q3) + my * (q1q2 - q0q3) + mz * (q1q3 + q0q2));
@@ -79,38 +84,38 @@ void imu_MahonyAHRSupdate9DOF(int bUseAccel, int bUseMag, float dt, float gx, fl
 			gx += integralFBx;	// apply integral feedback
 			gy += integralFBy;
 			gz += integralFBz;
-		}
+			}
 		else {
 			integralFBx = 0.0f;	// prevent integral windup
 			integralFBy = 0.0f;
 			integralFBz = 0.0f;
-		}
+			}
 
 		// Apply proportional feedback
 		gx += twoKp * halfex;
 		gy += twoKp * halfey;
 		gz += twoKp * halfez;
-	}
+		}
 	
 	// Integrate rate of change of quaternion
 	gx *= (0.5f * dt);		// pre-multiply common factors
 	gy *= (0.5f * dt);
 	gz *= (0.5f * dt);
-	qa = q0;
-	qb = q1;
-	qc = q2;
-	q0 += (-qb * gx - qc * gy - q3 * gz);
-	q1 += (qa * gx + qc * gz - q3 * gy);
-	q2 += (qa * gy - qb * gz + q3 * gx);
-	q3 += (qa * gz + qb * gy - qc * gx); 
+	qa = Q0;
+	qb = Q1;
+	qc = Q2;
+	Q0 += (-qb * gx - qc * gy - Q3 * gz);
+	Q1 += (qa * gx + qc * gz - Q3 * gy);
+	Q2 += (qa * gy - qb * gz + Q3 * gx);
+	Q3 += (qa * gz + qb * gy - qc * gx); 
 	
 	// Normalise quaternion
-	invNorm = 1.0f/sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
-	q0 *= invNorm;
-	q1 *= invNorm;
-	q2 *= invNorm;
-	q3 *= invNorm;
-}
+	invNorm = 1.0f/sqrt(Q0 * Q0 + Q1 * Q1 + Q2 * Q2 + Q3 * Q3);
+	Q0 *= invNorm;
+	Q1 *= invNorm;
+	Q2 *= invNorm;
+	Q3 *= invNorm;
+	}
 
 
 void imu_MahonyAHRSupdate6DOF(int bUseAccel, float dt, float gx, float gy, float gz, float ax, float ay, float az) {
@@ -128,9 +133,9 @@ void imu_MahonyAHRSupdate6DOF(int bUseAccel, float dt, float gx, float gy, float
 		az *= invNorm;        
 
 		// Estimated direction of gravity and vector perpendicular to magnetic flux
-		halfvx = q1 * q3 - q0 * q2;
-		halfvy = q0 * q1 + q2 * q3;
-		halfvz = q0 * q0 - 0.5f + q3 * q3;
+		halfvx = Q1 * Q3 - Q0 * Q2;
+		halfvy = Q0 * Q1 + Q2 * Q3;
+		halfvz = Q0 * Q0 - 0.5f + Q3 * Q3;
 	
 		// Error is sum of cross product between estimated and measured direction of gravity
 		halfex = (ay * halfvz - az * halfvy);
@@ -145,38 +150,38 @@ void imu_MahonyAHRSupdate6DOF(int bUseAccel, float dt, float gx, float gy, float
 			gx += integralFBx;	// apply integral feedback
 			gy += integralFBy;
 			gz += integralFBz;
-		}
+			}
 		else {
 			integralFBx = 0.0f;	// prevent integral windup
 			integralFBy = 0.0f;
 			integralFBz = 0.0f;
-		}
+			}
 
 		// Apply proportional feedback
 		gx += twoKp * halfex;
 		gy += twoKp * halfey;
 		gz += twoKp * halfez;
-	}
+		}
 	
 	// Integrate rate of change of quaternion
 	gx *= (0.5f * dt);		// pre-multiply common factors
 	gy *= (0.5f * dt);
 	gz *= (0.5f * dt);
-	qa = q0;
-	qb = q1;
-	qc = q2;
-	q0 += (-qb * gx - qc * gy - q3 * gz);
-	q1 += (qa * gx + qc * gz - q3 * gy);
-	q2 += (qa * gy - qb * gz + q3 * gx);
-	q3 += (qa * gz + qb * gy - qc * gx); 
+	qa = Q0;
+	qb = Q1;
+	qc = Q2;
+	Q0 += (-qb * gx - qc * gy - Q3 * gz);
+	Q1 += (qa * gx + qc * gz - Q3 * gy);
+	Q2 += (qa * gy - qb * gz + Q3 * gx);
+	Q3 += (qa * gz + qb * gy - qc * gx); 
 	
 	// Normalise quaternion
-	invNorm = 1.0f/sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
-	q0 *= invNorm;
-	q1 *= invNorm;
-	q2 *= invNorm;
-	q3 *= invNorm;
-}
+	invNorm = 1.0f/sqrt(Q0 * Q0 + Q1 * Q1 + Q2 * Q2 + Q3 * Q3);
+	Q0 *= invNorm;
+	Q1 *= invNorm;
+	Q2 *= invNorm;
+	Q3 *= invNorm;
+	}
 
 // HN
 void imu_Quaternion2YawPitchRoll(float q0, float q1, float q2, float q3, float* pYawDeg, float* pPitchDeg, float* pRollDeg) {

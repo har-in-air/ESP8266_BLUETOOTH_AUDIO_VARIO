@@ -1,8 +1,7 @@
 #include <Arduino.h>
-#include "Wire.h"
+#include <Wire.h>
 #include "config.h"
 #include "MS5611.h"
-
 
 MS5611::MS5611() {
 	paSample_ = 0.0f;
@@ -10,7 +9,6 @@ MS5611::MS5611() {
 	celsiusSample_ = 0;
 	zCmAvg_ = 0.0f;
 	}
-
 
 #if 0	
 
@@ -41,15 +39,15 @@ void MS5611::Test(int nSamples) {
         }
     paMean /= nSamples;
     zMean /= nSamples;
-    Serial.printf("paMean = %dPa, zMean = %dcm\r\n",(int)paMean,(int)zMean);
+    dbg_printf("paMean = %dPa, zMean = %dcm\r\n",(int)paMean,(int)zMean);
     for (n = 0; n < nSamples; n++) {
         paVariance += (pa[n]-paMean)*(pa[n]-paMean);
         zVariance += (z[n]-zMean)*(z[n]-zMean);
-        //Serial.printf("%d %d\r\n",(int)pa[n],(int)z[n]);
+        //dbg_printf("%d %d\r\n",(int)pa[n],(int)z[n]);
        }
     paVariance /= (nSamples-1);
     zVariance /= (nSamples-1);
-    Serial.printf("\r\npaVariance %d  zVariance %d\r\n",(int)paVariance, (int)zVariance);
+    dbg_printf("\r\npaVariance %d  zVariance %d\r\n",(int)paVariance, (int)zVariance);
 	}
 #endif
 
@@ -86,9 +84,9 @@ void MS5611::AveragedSample(int nSamples) {
 	paSample_ = (pAccum+nSamples/2)/nSamples;
 	zCmAvg_ = zCmSample_ = Pa2Cm(paSample_);
 #ifdef MS5611_DEBUG
-   Serial.printf("Tavg : %dC\r\n",celsiusSample_);
-   Serial.printf("Pavg : %dPa\r\n",(int)paSample_);
-   Serial.printf("Zavg : %dcm\r\n",(int)zCmAvg_);
+   dbg_printf(("Tavg : %dC\r\n",celsiusSample_));
+   dbg_printf(("Pavg : %dPa\r\n",(int)paSample_));
+   dbg_printf(("Zavg : %dcm\r\n",(int)zCmAvg_));
 #endif
 
 	}
@@ -221,7 +219,7 @@ void MS5611::GetCalibrationCoefficients(void)  {
 		cal_[inx] = (((uint16_t)prom_[promIndex])<<8) | (uint16_t)prom_[promIndex+1];
 		}
 #ifdef MS5611_DEBUG
-    Serial.printf("MS5611 Calibration Coeffs : %d %d %d %d %d %d\r\n",cal_[0],cal_[1],cal_[2],cal_[3],cal_[4],cal_[5]);
+    dbg_printf(("MS5611 Calibration Coeffs : %d %d %d %d %d %d\r\n",cal_[0],cal_[1],cal_[2],cal_[3],cal_[4],cal_[5]));
 #endif	 
     tref_ = ((int64_t)cal_[4])<<8;
     offT1_ = ((int64_t)cal_[1])<<16;
@@ -240,11 +238,11 @@ int MS5611::ReadPROM(void)    {
 			cnt++;
 			}
 		}			
-	//Serial.printf("\r\nProm : ");
+	//dbg_printf(("\r\nProm : "));
 	//for (int inx = 0; inx < 16; inx++) {
-	//	Serial.printf("0x%02x ", prom_[inx]);
+	//	dbg_printf(("0x%02x ", prom_[inx]));
 	//	}
-	//Serial.printf("\r\n");
+	//dbg_println(());
 	uint8_t crcPROM = prom_[15] & 0x0F;
 	uint8_t crcCalculated = CRC4(prom_);
 	return (crcCalculated == crcPROM ? 1 : 0);
@@ -256,7 +254,7 @@ uint8_t MS5611::CRC4(uint8_t prom[] ) {
 	 uint16_t crcRemainder; 
 	 uint8_t crcSave = prom[15]; // crc byte in PROM
 #ifdef MS5611_DEBUG
-	 Serial.printf("MS5611 PROM CRC = 0x%x\r\n", prom[15] & 0x0F);
+	 dbg_printf(("MS5611 PROM CRC = 0x%x\r\n", prom[15] & 0x0F));
 #endif	 
 	 crcRemainder = 0x0000;
 	 prom[15] = 0; //CRC byte is replaced by 0
@@ -275,7 +273,7 @@ uint8_t MS5611::CRC4(uint8_t prom[] ) {
 	 crcRemainder= (0x000F & (crcRemainder >> 12)); // final 4-bit reminder is CRC code
 	 prom[15] = crcSave; // restore the crc byte
 #ifdef MS5611_DEBUG
-	 Serial.printf("Calculated CRC = 0x%x\r\n",  crcRemainder ^ 0x0);
+	 dbg_printf(("Calculated CRC = 0x%x\r\n",  crcRemainder ^ 0x0));
 #endif	 
 	 return (uint8_t)(crcRemainder ^ 0x0);
 	} 

@@ -14,8 +14,8 @@
 #ifndef MahonyAHRS_h
 #define MahonyAHRS_h
 
-extern volatile float q0, q1, q2, q3;	// quaternion of sensor frame relative to auxiliary frame
-
+// quaternion of sensor frame relative to auxiliary frame
+extern volatile float Q0, Q1, Q2, Q3;
 
 void imu_MahonyAHRSupdate9DOF(int bUseAccel, int bUseMag, float dt, float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz);
 void imu_MahonyAHRSupdate6DOF(int bUseAccel, float dt, float gx, float gy, float gz, float ax, float ay, float az);

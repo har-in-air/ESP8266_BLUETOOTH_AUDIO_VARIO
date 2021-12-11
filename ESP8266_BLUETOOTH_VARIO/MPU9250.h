@@ -58,9 +58,9 @@ private :
 	int CheckID(void);
 	void GetAccelGyroData(float* pAccelData, float* pGyroData);
     void ConfigAccelGyro(void);
-    int  CalibrateGyro(void);
-    void CalibrateAccel(void);
-	void GetCalibrationParams(NVD* pNVD);
+    int  CalibrateGyro(CALIB_PARAMS &calib);
+    void CalibrateAccel(CALIB_PARAMS &calib);
+	void GetCalibrationParams(CALIB_PARAMS &calib);
 	void Sleep(void);
     void WriteByte(uint8_t deviceID, uint8_t addr, uint8_t val);
     uint8_t ReadByte(uint8_t deviceID, uint8_t addr);

@@ -7,22 +7,22 @@
 
 
 void VarioAudio::Config() {
-	sinkToneCps_       	=  (int32_t)nvd.params.vario.sinkThresholdCps;
-	climbToneCps_      	=  (int32_t)nvd.params.vario.climbThresholdCps;
-	zeroesToneCps_   	  =  (int32_t)nvd.params.vario.zeroThresholdCps;
-	crossoverCps_       =  (int32_t)nvd.params.vario.crossoverCps;
-#ifdef VARIO_DEBUG  
-  Serial.printf("climbToneCps = %d\r\n", climbToneCps_);
-  Serial.printf("zeroesToneCps = %d\r\n", zeroesToneCps_);
-  Serial.printf("sinkToneCps = %d\r\n", sinkToneCps_);
-  Serial.printf("crossoverCps = %d\r\n", crossoverCps_);
-#endif  
-  varioState_ 		= VARIO_STATE_QUIET;
-	beepPeriodTicks_	= 0;
-	beepEndTick_ 		= 0;
-	varioCps_ 			= 0;
-	freqHz_  			= 0;
-  }
+    sinkToneCps_    =  (int32_t)Nvd.par.cfg.vario.sinkThresholdCps;
+    climbToneCps_   =  (int32_t)Nvd.par.cfg.vario.climbThresholdCps;
+    zeroesToneCps_  =  (int32_t)Nvd.par.cfg.vario.zeroThresholdCps;
+    crossoverCps_   =  (int32_t)Nvd.par.cfg.vario.crossoverCps;
+    #ifdef VARIO_DEBUG  
+    dbg_printf(("climbToneCps = %d\r\n", climbToneCps_));
+    dbg_printf(("zeroesToneCps = %d\r\n", zeroesToneCps_));
+    dbg_printf(("sinkToneCps = %d\r\n", sinkToneCps_));
+    dbg_printf(("crossoverCps = %d\r\n", crossoverCps_));
+    #endif  
+    varioState_ 		= VARIO_STATE_QUIET;
+    beepPeriodTicks_	= 0;
+    beepEndTick_ 		= 0;
+    varioCps_ 			= 0;
+    freqHz_  			= 0;
+    }
 
 
 void VarioAudio::Beep(int32_t nCps) {
@@ -137,5 +137,3 @@ void VarioAudio::Beep(int32_t nCps) {
       }
 	  }
   }
-
-

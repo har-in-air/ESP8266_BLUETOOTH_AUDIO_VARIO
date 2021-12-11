@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>ESP8266 Bluetooth Audio Vario</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<h1>ESP8266 Bluetooth Audio Vario</h1>
+<div style="text-align:center">
+<p><span>Firmware Revision : </span><span id="firmwareRevision">%FIRMWARE_REVISION%</span></p>
+<p><span>Battery Voltage : </span><span id="batteryVoltage">%BATTERY_VOLTAGE%v</span></p>
+</div>
+<div style="text-align:center;">
+<a href="/defaults"><button>Set Defaults</button></a>
+</div>
+<br>
+<br>
+<form action="/get">
+<fieldset><legend>Vario</legend>
+<table>
+<tr>
+  <td>Climb Threshold [%CLIMB_MIN% .. %CLIMB_MAX%]</td> <td><input type="number" id="climbThreshold" name=climbThreshold min="%CLIMB_MIN%" max="%CLIMB_MAX%" value="%CLIMB_THRESHOLD%"></td>
+</tr>
+<tr>
+  <td>Zero Threshold [%ZERO_MIN% .. %ZERO_MAX%]</td> <td><input type="number" id="zeroThreshold" name=zeroThreshold min="%ZERO_MIN%" max="%ZERO_MAX%" value="%ZERO_THRESHOLD%"></td>
+</tr>
+<tr>
+  <td>Sink Threshold [%SINK_MIN% .. %SINK_MAX%]</td> <td><input type="number" id="sinkThreshold" name=sinkThreshold min="%SINK_MIN%" max="%SINK_MAX%" value="%SINK_THRESHOLD%"></td>
+</tr>
+<tr>
+  <td>Crossover Climbrate [%XOVER_MIN% .. %XOVER_MAX%]</td><td><input type="number" id="crossoverClimbrate" name=crossoverClimbrate min="%XOVER_MIN%" max="%XOVER_MAX%" value="%CROSSOVER_CLIMBRATE%"></td>
+</tr>
+</table>  
+</fieldset>
+<br>
+
+<fieldset><legend>Kalman Filter</legend>
+<table>
+<tr>
+  <td>Acceleration Variance [%AVAR_MIN% .. %AVAR_MAX%]</td> <td><input type="number" id="accelVariance" name=accelVariance min="%AVAR_MIN%" max="%AVAR_MAX%" value="%ACCEL_VARIANCE%"></td>
+</tr>
+<tr>
+  <td>Altitude Noise Variance [%ZVAR_MIN% .. %ZVAR_MAX%]</td><td><input type="number" id="noiseVariance" name=noiseVariance min="%ZVAR_MIN%" max="%ZVAR_MAX%" value="%NOISE_VARIANCE%"></td>
+</tr>
+</table>  
+</fieldset>
+<br>
+
+<fieldset><legend>Miscellaneous</legend>
+<table>
+<tr>
+  <td>Sleep Timeout [%SLEEP_MIN% .. %SLEEP_MAX%]</td> <td><input type="number" id="sleepTimeout" name=sleepTimeout min="%SLEEP_MIN%" max="%SLEEP_MAX%" value="%SLEEP_TIMEOUT%"></td>
+</tr>
+</table>  
+  Bluetooth
+  <input type="radio" id="btoff" name=bluetooth value="btoff" %BT_OFF%><label for="btoff">Off</label>
+  <input type="radio" id="bton"  name=bluetooth value="bton"  %BT_ON%><label for="bton">On</label>
+</fieldset>
+<br>
+
+<div style="text-align:center;">
+<input type="submit" value="Submit" class="form-submit-button">
+</div>
+</form>
+</body>
+</html>
