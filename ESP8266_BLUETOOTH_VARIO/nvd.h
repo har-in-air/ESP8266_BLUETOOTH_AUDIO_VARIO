@@ -48,12 +48,12 @@ typedef union NVD_ {
 
 extern NVD Nvd;
 
-void nvd_Init(void);
-void nvd_setDefaults();
-void nvd_Commit(void);
-uint16_t nvd_CheckSum(void);
-void nvd_SaveCalibrationParams(CALIB_PARAMS &calib);
-void nvd_SaveConfigurationParams(CONFIG_PARAMS &cfg);
+void nvd_init(void);
+void nvd_set_defaults();
+void nvd_commit(void);
+uint16_t nvd_checksum(void);
+void nvd_save_calib_params(CALIB_PARAMS &calib);
+void nvd_save_config_params(CONFIG_PARAMS &cfg);
 
 
 #endif

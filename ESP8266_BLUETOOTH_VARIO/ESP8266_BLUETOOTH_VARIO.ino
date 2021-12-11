@@ -5,17 +5,17 @@
 #include "config.h"
 #include "board.h"
 #include "util.h"
-#include "MahonyAHRS.h"
-#include "MPU9250.h"
-#include "MS5611.h"
+#include "imu.h"
+#include "mpu9250.h"
+#include "ms5611.h"
 #include "kalmanfilter4.h"
-#include "VarioAudio.h"
+#include "varioaudio.h"
 #include "cct.h"
 #include "adc.h"
 #include "nvd.h"
 #include "audio.h"
 #include "ringbuf.h"
-#include "wificonfig.h"
+#include "wificfg.h"
 #include "ui.h"
 #include "btserial.h"
 
@@ -64,27 +64,27 @@ MPU9250 Mpu9250;
 MS5611 Ms5611;
 VarioAudio Vario;
 
-const char* FirmwareRevision = "0.98";
+const char* FirmwareRevision = "0.99";
 
 // handles data ready interrupt from MPU9250
-void IRAM_ATTR drdy_InterruptHandler() {
+void IRAM_ATTR drdy_interrupt_handler() {
 	DrdyFlag = true;
 	DrdyCounter++;
 	}	
 
 // setup time markers for Mpu9250, Ms5611 and kalman filter
-void time_Init() {
+void time_init() {
 	TimeNowUs = TimePreviousUs = micros();
 	}
 
-inline void time_Update(){
+inline void time_update(){
 	TimeNowUs = micros();
 	ImuTimeDeltaUSecs = TimeNowUs > TimePreviousUs ? (float)(TimeNowUs - TimePreviousUs) : 2000.0f; // if rollover use expected time difference
 	TimePreviousUs = TimeNowUs;
 	}
 
 
-void setupVario() {
+void setup_vario() {
 	dbg_println(("Vario mode"));
 	if (Nvd.par.cfg.misc.bluetoothEnable) {
 		dbg_println(("Enabling Bluetooth"));
@@ -92,26 +92,27 @@ void setupVario() {
 		delay(300);
 		Serial1.begin(9600);
 		delay(20);
+		// bluetooth device name = "EspVario"
 		Serial1.print("AT+NAMEEspVario");
 		}
 	Wire.begin(pinSDA, pinSCL);
 	Wire.setClock(400000); // set i2c clock frequency AFTER Wire.begin()
 	delay(100);
 	dbg_println(("\r\nChecking communication with MS5611"));
-	if (!Ms5611.ReadPROM()) {
+	if (!Ms5611.read_prom()) {
 		dbg_println(("Bad CRC read from MS5611 calibration PROM"));
 		Serial.flush();
-		indicateFaultMS5611(); 
-		goToSleep();   // switch off and then on to fix this
+		ui_indicate_fault_MS5611(); 
+		ui_go_to_sleep();   // switch off and then on to fix this
 		}
 	dbg_println(("MS5611 OK"));
   
 	dbg_println(("\r\nChecking communication with MPU9250"));
-	if (!Mpu9250.CheckID()) {
+	if (!Mpu9250.check_id()) {
 		dbg_println(("Error reading Mpu9250 WHO_AM_I register"));
 		Serial.flush();
-		indicateFaultMPU9250();
-		goToSleep();   // switch off and then on to fix this
+		ui_indicate_fault_MPU9250();
+		ui_go_to_sleep();   // switch off and then on to fix this
 		}
 	dbg_println(("MPU9250 OK"));
     
@@ -120,25 +121,27 @@ void setupVario() {
 	// interrupt output of MPU9250 is configured as push-pull, active high pulse. This is connected to
 	// pinDRDYInt (GPIO15) which already has an external 10K pull-down resistor (required for normal ESP8266 boot mode)
 	pinMode(pinDRDYInt, INPUT); 
-	attachInterrupt(digitalPinToInterrupt(pinDRDYInt), drdy_InterruptHandler, RISING);
+	attachInterrupt(digitalPinToInterrupt(pinDRDYInt), drdy_interrupt_handler, RISING);
 
 	// configure MPU9250 to start generating gyro and accel data  
-	Mpu9250.ConfigAccelGyro();
-	calibrate_accel_gyro();
-	delay(100);  
+	Mpu9250.config_accel_gyro();
+
+	// calibrate gyro (and accel if required)
+	ui_calibrate_accel_gyro();
+	delay(50);  
 	  
 	dbg_println(("\r\nMS5611 config"));
-	Ms5611.Reset();
-	Ms5611.GetCalibrationCoefficients(); // load MS5611 factory programmed calibration data
-	Ms5611.AveragedSample(4); // get an estimate of starting altitude
-	Ms5611.InitializeSampleStateMachine(); // start the pressure & temperature sampling cycle
+	Ms5611.reset();
+	Ms5611.get_calib_coefficients(); // load MS5611 factory programmed calibration data
+	Ms5611.averaged_sample(4); // get an estimate of starting altitude
+	Ms5611.init_sample_state_machine(); // start the pressure & temperature sampling cycle
 
 	dbg_println(("\r\nKalmanFilter config"));
 	// initialize kalman filter with Ms5611meter estimated altitude, and climbrate = 0.0
-	kalmanFilter4_configure((float)Nvd.par.cfg.kf.zMeasVariance, 1000.0f*(float)Nvd.par.cfg.kf.accelVariance, true, Ms5611.zCmAvg_, 0.0f, 0.0f);
+	kalmanFilter4_configure((float)Nvd.par.cfg.kf.zMeasVariance, 1000.0f*(float)Nvd.par.cfg.kf.accelVariance, true, Ms5611.altitudeCmAvg, 0.0f, 0.0f);
 
-	Vario.Config();  
-	time_Init();
+	Vario.config();  
+	time_init();
 	KfTimeDeltaUSecs = 0.0f;
 	BaroCounter = 0;
 	SleepTimeoutSecs = 0;
@@ -153,7 +156,7 @@ void setupVario() {
 	}
 
    
-void setupLantern() {
+void setup_lantern() {
    dbg_println(("Lantern mode"));
    LanternState = 0;
    analogWrite(pinLED, LEDPwmLkp[LanternState]);
@@ -169,7 +172,7 @@ void setup() {
 	digitalWrite(pinL9110Pwr, 0); // disable
 	pinMode(pinPGCC, INPUT); //  Program/Configure/Calibrate Button
 
-	wificonfig_wifiOff(); // turn off radio to save power
+	wificfg_wifi_off(); // turn off radio to save power
 
 #ifdef TOP_DEBUG    
 	Serial.begin(115200);
@@ -178,14 +181,14 @@ void setup() {
 	dbg_printf(("\r\n\r\nESP8266 BLUETOOTH VARIO compiled on %s at %s\r\n", __DATE__, __TIME__));
 	dbg_printf(("Firmware Revision %s\r\n", FirmwareRevision));
 	dbg_println(("\r\nChecking non-volatile data (calibration and configuration)"));  
-	nvd_Init();
+	nvd_init();
 
 	if (!LittleFS.begin()){
 		dbg_println(("Error mounting LittleFS"));
 		return;
 		}   
 
-	audio_Config(pinAudio); 
+	audio_config(pinAudio); 
 
 	bWebConfigure = false;
 	dbg_println(("To start web configuration mode, press and hold the pgmconfcal button"));
@@ -203,23 +206,23 @@ void setup() {
 		// 3 second long tone with low frequency to indicate unit is now in web server configuration mode.
 		// After you are done with web configuration, switch off the vario as the wifi radio
 		// consumes a lot of power.
-		audio_GenerateTone(200, 3000);
-		wifi_access_point_init(); 
+		audio_generate_tone(200, 3000);
+		wificfg_ap_server_init(); 
 		}
   	else {
-    	battery_IndicateVoltage();
+    	ui_indicate_battery_voltage();
     	switch (AppMode) {
 			case APP_MODE_VARIO :
 			default :
-			setupVario();
+			setup_vario();
 			break;
 
 			case APP_MODE_LANTERN :
-			setupLantern();
+			setup_lantern();
 			break;
 			}
 		}
-	btn_init();	
+	ui_btn_init();	
 	}
 
 
@@ -227,12 +230,12 @@ void vario_loop() {
 	if (DrdyFlag == true) {
 		// 500Hz ODR => 2mS sample interval
 		DrdyFlag = false;
-		time_Update();
+		time_update();
 		#ifdef CCT_DEBUG    
-		cct_SetMarker(); // set marker for estimating the time taken to read and process the data
+		cct_set_marker(); // set marker for estimating the time taken to read and process the data
 		#endif    
 		// accelerometer samples (ax,ay,az) in milli-Gs, gyroscope samples (gx,gy,gz) in degrees/second
-		Mpu9250.GetAccelGyroData(AccelmG, GyroDps); 
+		Mpu9250.get_accel_gyro_data(AccelmG, GyroDps); 
 
 		// We arbitrarily decide that with the power bank lying flat with the pcb on top,
 		// the CJMCU-117 board silkscreen -Y points "forward" or "north"  (the side with the HM-11), 
@@ -246,27 +249,27 @@ void vario_loop() {
 		float accelMagnitudeSquared = AccelmG[0]*AccelmG[0] + AccelmG[1]*AccelmG[1] + AccelmG[2]*AccelmG[2];
 		int bUseAccel = ((accelMagnitudeSquared > 562500.0f) && (accelMagnitudeSquared < 1562500.0f)) ? 1 : 0;
 		float dtIMU = ImuTimeDeltaUSecs/1000000.0f;
-		imu_MahonyAHRSupdate6DOF(bUseAccel, dtIMU, DEG_TO_RAD*GyroDps[0], DEG_TO_RAD*GyroDps[1], -DEG_TO_RAD*GyroDps[2], AccelmG[1], AccelmG[0], AccelmG[2]);
-		float gravityCompensatedAccel = imu_GravityCompensatedAccel(AccelmG[1], AccelmG[0], AccelmG[2], Q0, Q1, Q2, Q3);
-		ringbuf_addSample(gravityCompensatedAccel);  
+		imu_mahonyAHRS_update6DOF(bUseAccel, dtIMU, DEG_TO_RAD*GyroDps[0], DEG_TO_RAD*GyroDps[1], -DEG_TO_RAD*GyroDps[2], AccelmG[1], AccelmG[0], AccelmG[2]);
+		float gCompensatedAccel = imu_gravity_compensated_accel(AccelmG[1], AccelmG[0], AccelmG[2], Q0, Q1, Q2, Q3);
+		ringbuf_add_sample(gCompensatedAccel);  
 
 		BaroCounter++;
 		KfTimeDeltaUSecs += ImuTimeDeltaUSecs;
 		if (BaroCounter >= 5) { // 5*2mS = 10mS elapsed, this is the sampling period for MS5611, 
 			BaroCounter = 0;    // alternating between pressure and temperature samples
 			// one altitude sample is calculated for every new pair of pressure & temperature samples
-			int zMeasurementAvailable = Ms5611.SampleStateMachine(); 
+			int zMeasurementAvailable = Ms5611.sample_state_machine(); 
 			if ( zMeasurementAvailable ) { 
 				// average earth-z acceleration over the 20mS interval between z samples
 				// is used in the kf algorithm update phase
-				float zAccelAverage = ringbuf_averageNewestSamples(10); 
+				float zAccelAverage = ringbuf_average_newest_samples(10); 
 				float dtKF = KfTimeDeltaUSecs/1000000.0f;
 				kalmanFilter4_predict(dtKF);
-				kalmanFilter4_update(Ms5611.zCmSample_, zAccelAverage, (float*)&KfAltitudeCm, (float*)&KfClimbrateCps);
+				kalmanFilter4_update(Ms5611.altitudeCm, zAccelAverage, (float*)&KfAltitudeCm, (float*)&KfClimbrateCps);
 				// reset time elapsed between kalman filter algorithm updates
 				KfTimeDeltaUSecs = 0.0f;
 				AudioCps =  KfClimbrateCps >= 0.0f ? (int32_t)(KfClimbrateCps+0.5f) : (int32_t)(KfClimbrateCps-0.5f);
-				Vario.Beep(AudioCps);                
+				Vario.beep(AudioCps);                
 				if (ABS(AudioCps) > SLEEP_THRESHOLD_CPS) { 
 					// reset sleep timeout watchdog if there is significant vertical motion
 					SleepTimeoutSecs = 0;
@@ -275,14 +278,14 @@ void vario_loop() {
 				if (SleepTimeoutSecs >= (Nvd.par.cfg.misc.sleepTimeoutMinutes*60)) {
 					dbg_println(("Timed out with no significant climb/sink, put MPU9250 and ESP8266 to sleep to minimize current draw"));
 					Serial.flush();
-					indicateSleep(); 
-					goToSleep();
+					ui_indicate_sleep(); 
+					ui_go_to_sleep();
 					}   
 				}
 			}
 			
 	#ifdef CCT_DEBUG      
-		uint32_t elapsedUs =  cct_ElapsedTimeUs(); // calculate time  taken to read and process the data, must be less than 2mS
+		uint32_t elapsedUs =  cct_get_elapsedUs(); // calculate time  taken to read and process the data, must be less than 2mS
 	#endif
 		if (DrdyCounter >= 50) {
 			DrdyCounter = 0; // 0.1 second elapsed
@@ -290,7 +293,7 @@ void vario_loop() {
 				int adcVal = analogRead(A0);
 				float bv = adc_battery_voltage(adcVal);
 				int altM =  KfAltitudeCm > 0.0f ? (int)((KfAltitudeCm+50.0f)/100.0f) :(int)((KfAltitudeCm-50.0f)/100.0f);
-				btserial_transmitSentence(altM, AudioCps, bv);
+				btserial_transmit_LK8EX1(altM, AudioCps, bv);
 				}
 			SleepCounter++;
 			if (SleepCounter >= 10) {
@@ -298,7 +301,7 @@ void vario_loop() {
 				SleepTimeoutSecs++;
 				#ifdef IMU_DEBUG
 				float yaw, pitch, roll;
-				imu_Quaternion2YawPitchRoll(q0,q1,q2,q3, &yaw, &pitch, &roll);
+				imu_quaternion_to_yaw_pitch_roll(Q0,Q1,Q2,Q3, &yaw, &pitch, &roll);
 				// Pitch is positive for clockwise rotation about the +Y axis
 				// Roll is positive for clockwise rotation about the +X axis
 				// Yaw is positive for clockwise rotation about the +Z axis
@@ -315,9 +318,9 @@ void vario_loop() {
 
 	if (BtnPGCCLongPress == true) {
 		AppMode = APP_MODE_LANTERN;
-		setupLantern();
+		setup_lantern();
 		delay(500);
-		btn_clear();    
+		ui_btn_clear();    
 		}  
 	}
 
@@ -325,7 +328,7 @@ void vario_loop() {
 void lantern_loop() {
 	int count;
 	if (BtnPGCCPressed) {
-		btn_clear();
+		ui_btn_clear();
 		LanternState++;
 		if (LanternState > 4) {
 			LanternState = 0;

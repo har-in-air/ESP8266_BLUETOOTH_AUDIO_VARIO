@@ -4,7 +4,7 @@
 
 #define NUM_AVG_SAMPLES 4
 
-int adc_sampleAverage() {
+int adc_sample_average() {
   int adcSample = 0;
   for (int inx = 0; inx < NUM_AVG_SAMPLES; inx++) {
     adcSample += analogRead(A0);

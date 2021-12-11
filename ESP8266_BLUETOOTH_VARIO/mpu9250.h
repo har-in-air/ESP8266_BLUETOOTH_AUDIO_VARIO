@@ -48,23 +48,22 @@
 
 
 class MPU9250 {
-
 private :
 	float aScale_;
 	float gScale_;
 	
   public:
     MPU9250();
-	int CheckID(void);
-	void GetAccelGyroData(float* pAccelData, float* pGyroData);
-    void ConfigAccelGyro(void);
-    int  CalibrateGyro(CALIB_PARAMS &calib);
-    void CalibrateAccel(CALIB_PARAMS &calib);
-	void GetCalibrationParams(CALIB_PARAMS &calib);
-	void Sleep(void);
-    void WriteByte(uint8_t deviceID, uint8_t addr, uint8_t val);
-    uint8_t ReadByte(uint8_t deviceID, uint8_t addr);
-    int ReadBytes(uint8_t deviceID, uint8_t addr, uint8_t numBytes, uint8_t *pBuf);
+	int check_id(void);
+	void get_accel_gyro_data(float* pAccelData, float* pGyroData);
+    void config_accel_gyro(void);
+    int  calibrate_gyro(CALIB_PARAMS &calib);
+    void calibrate_accel(CALIB_PARAMS &calib);
+	void get_calib_params(CALIB_PARAMS &calib);
+	void sleep(void);
+    void write_byte(uint8_t deviceID, uint8_t addr, uint8_t val);
+    uint8_t read_byte(uint8_t deviceID, uint8_t addr);
+    int read_bytes(uint8_t deviceID, uint8_t addr, uint8_t numBytes, uint8_t *pBuf);
 
     int16_t axBias_;
     int16_t ayBias_;

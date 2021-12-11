@@ -6,7 +6,7 @@
 #include "adc.h"
 #include "nvd.h"
 #include "ui.h"
-#include "MPU9250.h"
+#include "mpu9250.h"
 
 Ticker     Tickr;
 
@@ -25,12 +25,13 @@ void IRAM_ATTR btn_debounce() {
    }
 
 	
-void btn_init() {
+void ui_btn_init() {
  	Tickr.attach_ms(25, btn_debounce);
-	btn_clear();
+	ui_btn_clear();
 	}
 		
-void btn_clear() {
+
+void ui_btn_clear() {
    BtnPGCCPressed  = false;
    BtnPGCCLongPress = false;
    }
@@ -40,10 +41,10 @@ void btn_clear() {
 // If flash was completely erased, or Mpu9250 calibration data in flash was never initialized, or 
 // imu calibration data is corrupt, the accel and gyro biases are set to 0. Uncalibrated 
 // state is indicated with a continuous sequence of alternating high and low beeps for 5 seconds.
-void indicateUncalibratedAccelerometerGyro() {
+void ui_indicate_uncalibrated_accel_gyro() {
 	for (int cnt = 0; cnt < 5; cnt++) {
-		audio_GenerateTone(UNCALIBRATED_TONE_HZ, 500); 
-		audio_GenerateTone(UNCALIBRATED_TONE_HZ/2, 500);
+		audio_generate_tone(UNCALIBRATED_TONE_HZ, 500); 
+		audio_generate_tone(UNCALIBRATED_TONE_HZ/2, 500);
 		}
 	}
 
@@ -51,32 +52,32 @@ void indicateUncalibratedAccelerometerGyro() {
 // "no-activity" timeout sleep is indicated with a series of descending
 // tones. If you do hear this, switch off the vario as there is still
 // residual current draw from the circuit components in sleep mode
-void indicateSleep() {
-	audio_GenerateTone(2000,1000); 
-	audio_GenerateTone(1000,1000);
-	audio_GenerateTone(500, 1000);
-	audio_GenerateTone(250, 1000);
+void ui_indicate_sleep() {
+	audio_generate_tone(2000,1000); 
+	audio_generate_tone(1000,1000);
+	audio_generate_tone(500, 1000);
+	audio_generate_tone(250, 1000);
 	}
 
 // problem with MS5611 calibration CRC, assume communication error or bad device. 
-void indicateFaultMS5611() {
+void ui_indicate_fault_MS5611() {
 	for (int cnt = 0; cnt < 10; cnt++) {
-		audio_GenerateTone(MS5611_ERROR_TONE_HZ, 1000); 
+		audio_generate_tone(MS5611_ERROR_TONE_HZ, 1000); 
 		delay(100);
 		}
 	}
 
 // problem reading MPU9250 ID, assume communication error or bad device. 
-void indicateFaultMPU9250() {
+void ui_indicate_fault_MPU9250() {
 	for (int cnt = 0; cnt < 10; cnt++) {
-		audio_GenerateTone(MPU9250_ERROR_TONE_HZ, 1000); 
+		audio_generate_tone(MPU9250_ERROR_TONE_HZ, 1000); 
 		delay(100);
 		}
 	}
 
-void battery_IndicateVoltage() {
+void ui_indicate_battery_voltage() {
    int numBeeps;
-   int adcVal = adc_sampleAverage();
+   int adcVal = adc_sample_average();
    float fbv = adc_battery_voltage(adcVal);
    dbg_printf(("\r\nBattery voltage = %.2fV\r\n", fbv ));
 
@@ -89,45 +90,45 @@ void battery_IndicateVoltage() {
    if (fbv >= 3.6f) numBeeps = 2;
    else  numBeeps = 1;
    while (numBeeps--) {
-      audio_GenerateTone(BATTERY_TONE_HZ, 300);
+      audio_generate_tone(BATTERY_TONE_HZ, 300);
       delay(300);
       }
    }
    
 
-void calibrate_accelerometer(CALIB_PARAMS &calib) {    
+void ui_calibrate_accel(CALIB_PARAMS &calib) {    
     // acknowledge calibration button press with long tone
-    audio_GenerateTone(CALIBRATING_TONE_HZ, 3000);
+    audio_generate_tone(CALIBRATING_TONE_HZ, 3000);
     dbg_println(("-- Accelerometer calibration --"));
     dbg_println(("Place vario on a level surface with accelerometer z axis vertical and leave it undisturbed"));
     dbg_println(("You have 10 seconds, counted down with rapid beeps from 50 to 0"));
     for (int inx = 0; inx < 50; inx++) {
       delay(200); 
   	   dbg_println((50-inx));
-      audio_GenerateTone(CALIBRATING_TONE_HZ, 50);
+      audio_generate_tone(CALIBRATING_TONE_HZ, 50);
       }
     dbg_println(("\r\nCalibrating accelerometer"));
-    Mpu9250.CalibrateAccel(calib);
+    Mpu9250.calibrate_accel(calib);
     dbg_println(("Accelerometer calibration done"));
-    nvd_SaveCalibrationParams(calib);
+    nvd_save_calib_params(calib);
     }
 
 
-void calibrate_gyro(CALIB_PARAMS &calib) {    
+void ui_calibrate_gyro(CALIB_PARAMS &calib) {    
    dbg_println(("\r\nCalibrating gyro"));
   // normal power-on operation flow, always attempt to calibrate gyro. If calibration isn't possible because 
   // the unit is continuously disturbed (e.g. you turned on the unit while already flying), indicate this and
   // use the last saved gyro biases. Otherwise, save the new gyro biases to flash memory
-  if (Mpu9250.CalibrateGyro(calib)) {
+  if (Mpu9250.calibrate_gyro(calib)) {
     dbg_println(("Gyro calibration OK"));
-    audio_GenerateTone(CALIBRATING_TONE_HZ, 1000);
-    nvd_SaveCalibrationParams(calib);
+    audio_generate_tone(CALIBRATING_TONE_HZ, 1000);
+    nvd_save_calib_params(calib);
     }
   else { 
     dbg_println(("Gyro calibration failed"));
-    audio_GenerateTone(CALIBRATING_TONE_HZ, 1000);
+    audio_generate_tone(CALIBRATING_TONE_HZ, 1000);
     delay(500);
-    audio_GenerateTone(CALIBRATING_TONE_HZ/2, 1000);
+    audio_generate_tone(CALIBRATING_TONE_HZ/2, 1000);
     }
 }
 
@@ -142,36 +143,36 @@ void calibrate_gyro(CALIB_PARAMS &calib) {
 // with the accelerometer +z axis pointing vertically downwards. You will have some time 
 // to do this, indicated by a series of beeps. After calibration, the unit will generate another 
 // tone, save the calibration parameters to flash, and continue with normal vario operation
-void calibrate_accel_gyro() {  
-	boolean bCalibrateAccelerometer = false;
+void ui_calibrate_accel_gyro() {  
+	boolean bCalibrateAccel = false;
     // load the accel & gyro calibration parameters from the non-volatile data structure
-    Mpu9250.GetCalibrationParams(Nvd.par.calib);
+    Mpu9250.get_calib_params(Nvd.par.calib);
   	if ((Nvd.par.calib.axBias == 0) && (Nvd.par.calib.ayBias == 0) && (Nvd.par.calib.azBias == 0)) {
     	dbg_println(("! Uncalibrated accelerometer !"));
-    	indicateUncalibratedAccelerometerGyro(); 
-		bCalibrateAccelerometer = true;    
+    	ui_indicate_uncalibrated_accel_gyro(); 
+		bCalibrateAccel = true;    
     	}
-	if (bCalibrateAccelerometer == true) {  
+	if (bCalibrateAccel == true) {  
     	dbg_println(("Starting accelerometer calibration"));
-		calibrate_accelerometer(Nvd.par.calib);
-		bCalibrateAccelerometer = false;
+		ui_calibrate_accel(Nvd.par.calib);
+		bCalibrateAccel = false;
 		}	
 	dbg_println(("Counting down to gyro calibration"));
-	dbg_println(("Press the PGM/CONF/CAL button to enforce accelerometer calibration first"));
+	dbg_println(("Press the PGCC button to enforce accelerometer calibration first"));
 	for (int inx = 0; inx < 10; inx++) {
 		delay(500); 
 		dbg_println((10-inx));
-		audio_GenerateTone(CALIBRATING_TONE_HZ, 50); 
+		audio_generate_tone(CALIBRATING_TONE_HZ, 50); 
 		if (digitalRead(pinPGCC) == 0) {
-			bCalibrateAccelerometer = true;
-			dbg_println(("PGM/CONF/CAL button pressed"));
+			bCalibrateAccel = true;
+			dbg_println(("PGCC button pressed"));
 			break;
 			}
 		}
-	if (bCalibrateAccelerometer == true) {  
-		calibrate_accelerometer(Nvd.par.calib);
+	if (bCalibrateAccel == true) {  
+		ui_calibrate_accel(Nvd.par.calib);
 		}
-	calibrate_gyro(Nvd.par.calib);
+	ui_calibrate_gyro(Nvd.par.calib);
 	}
 	
 
@@ -179,10 +180,10 @@ void calibrate_accel_gyro() {
 // MPU9250 sleep mode current, MS5611 standby current, quiescent current of voltage
 // regulators, and miscellaneous current through resistive paths e.g. the
 // ADC voltage divider.
-void goToSleep() {
-	audio_SetFrequency(0); // switch off pwm audio 
+void ui_go_to_sleep() {
+	audio_set_frequency(0); // switch off pwm audio 
 	digitalWrite(pinHM11Pwr, 0); // switch off bluetooth power supply
-	Mpu9250.Sleep(); // put MPU9250 in sleep mode
+	Mpu9250.sleep(); // put MPU9250 in sleep mode
 	ESP.deepSleep(0); // ESP8266 in sleep can only recover with a reset/power cycle
 	}
 

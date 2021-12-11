@@ -3,7 +3,7 @@
 #include "config.h"
 #include "util.h"
 #include "audio.h"
-#include "MPU9250.h"
+#include "mpu9250.h"
 #include "nvd.h"
 
 
@@ -24,10 +24,10 @@ MPU9250::MPU9250() {
 	}
 
 
-void MPU9250::GetAccelGyroData(float* pAccelData, float* pGyroData) {
+void MPU9250::get_accel_gyro_data(float* pAccelData, float* pGyroData) {
 	uint8_t buf[14];
 	int16_t raw[3];
-	ReadBytes(MPU9250_I2C_ADDRESS, ACCEL_XOUT_H, 14, buf);
+	read_bytes(MPU9250_I2C_ADDRESS, ACCEL_XOUT_H, 14, buf);
 	raw[0] = (int16_t)(((uint16_t)buf[0] << 8) | (uint16_t)buf[1]);
 	raw[1] = (int16_t)(((uint16_t)buf[2] << 8) | (uint16_t)buf[3]);
 	raw[2] = (int16_t)(((uint16_t)buf[4] << 8) | (uint16_t)buf[5]);	
@@ -43,12 +43,12 @@ void MPU9250::GetAccelGyroData(float* pAccelData, float* pGyroData) {
 	}
 
 	
-int MPU9250::CheckID(void) {
-	uint8_t whoami = ReadByte(MPU9250_I2C_ADDRESS, WHO_AM_I_MPU9250);
+int MPU9250::check_id(void) {
+	uint8_t whoami = read_byte(MPU9250_I2C_ADDRESS, WHO_AM_I_MPU9250);
 	return (( whoami == 0x71) ? 1 : 0);
 	}
 	
-void MPU9250::GetCalibrationParams(CALIB_PARAMS &calib) {
+void MPU9250::get_calib_params(CALIB_PARAMS &calib) {
 	axBias_ = calib.axBias;
 	ayBias_ = calib.ayBias;
 	azBias_ = calib.azBias;
@@ -63,42 +63,42 @@ void MPU9250::GetCalibrationParams(CALIB_PARAMS &calib) {
 	}
 
 
-void MPU9250::Sleep(void) {
-	WriteByte(MPU9250_I2C_ADDRESS, PWR_MGMT_1, 0x40);
+void MPU9250::sleep(void) {
+	write_byte(MPU9250_I2C_ADDRESS, PWR_MGMT_1, 0x40);
 	}
 
-void MPU9250::ConfigAccelGyro(void) {
+void MPU9250::config_accel_gyro(void) {
 	// reset MPU9250, all registers to default settings
-	WriteByte(MPU9250_I2C_ADDRESS, PWR_MGMT_1, 0x80);
+	write_byte(MPU9250_I2C_ADDRESS, PWR_MGMT_1, 0x80);
 	delay(100); // Wait after reset
 	// as per datasheet all registers are reset to 0 except WHOAMI and PWR_MGMT_1, 
 	// so we assume reserved bits are 0
 	// select best available clock source 
-	WriteByte(MPU9250_I2C_ADDRESS, PWR_MGMT_1, 0x01);
+	write_byte(MPU9250_I2C_ADDRESS, PWR_MGMT_1, 0x01);
 	delay(200);
 
 	// fsync disabled, gyro bandwidth = 184Hz (with GYRO_CONFIG:fchoice_b = 00) 
-	WriteByte(MPU9250_I2C_ADDRESS, CONFIG, 0x01);
+	write_byte(MPU9250_I2C_ADDRESS, CONFIG, 0x01);
 
 	// output data rate = 1000Hz/(1+1) = 500Hz
-	WriteByte(MPU9250_I2C_ADDRESS, SMPLRT_DIV, 0x01);
+	write_byte(MPU9250_I2C_ADDRESS, SMPLRT_DIV, 0x01);
 
 	// set gyro FS = 1000dps, fchoice_b = 00 
   // bits[4:3] = 10 
-	WriteByte(MPU9250_I2C_ADDRESS, GYRO_CONFIG, 0x10 );
+	write_byte(MPU9250_I2C_ADDRESS, GYRO_CONFIG, 0x10 );
 
 	// Set accelerometer FS = +/-4G 
 	// bits[4:3] = 01 
-	WriteByte(MPU9250_I2C_ADDRESS, ACCEL_CONFIG, 0x08);
+	write_byte(MPU9250_I2C_ADDRESS, ACCEL_CONFIG, 0x08);
 
 	// set accelerometer BW = 184Hz
 	// accel_fchoiceb = 0, a_dlpf_cfg = 1
-	WriteByte(MPU9250_I2C_ADDRESS, ACCEL_CONFIG2, 0x01);
+	write_byte(MPU9250_I2C_ADDRESS, ACCEL_CONFIG2, 0x01);
 
 	// interrupt is active high, push-pull, 50uS pulse
-	WriteByte(MPU9250_I2C_ADDRESS, INT_PIN_CFG, 0x10);
+	write_byte(MPU9250_I2C_ADDRESS, INT_PIN_CFG, 0x10);
 	// Enable data ready interrupt on INT pin
-	WriteByte(MPU9250_I2C_ADDRESS, INT_ENABLE, 0x01);
+	write_byte(MPU9250_I2C_ADDRESS, INT_ENABLE, 0x01);
 	delay(100);
 	}
 
@@ -113,13 +113,13 @@ void MPU9250::ConfigAccelGyro(void) {
 
 #define ACCEL_NUM_AVG_SAMPLES	100
 
-void MPU9250::CalibrateAccel(CALIB_PARAMS &calib){
+void MPU9250::calibrate_accel(CALIB_PARAMS &calib){
 	uint8_t buf[6];
 	int16_t x,y,z;
 	int32_t axAccum, ayAccum, azAccum;
 	axAccum = ayAccum = azAccum = 0;
 	for (int inx = 0; inx < ACCEL_NUM_AVG_SAMPLES; inx++){
-		ReadBytes(MPU9250_I2C_ADDRESS, ACCEL_XOUT_H, 6, buf);
+		read_bytes(MPU9250_I2C_ADDRESS, ACCEL_XOUT_H, 6, buf);
 		x = (int16_t)(((uint16_t)buf[0] << 8) | (uint16_t)buf[1]);
 		y = (int16_t)(((uint16_t)buf[2] << 8) | (uint16_t)buf[3]);
 		z = (int16_t)(((uint16_t)buf[4] << 8) | (uint16_t)buf[5]);	
@@ -148,7 +148,7 @@ void MPU9250::CalibrateAccel(CALIB_PARAMS &calib){
 
 #define GYRO_NUM_CALIB_SAMPLES			50
 	
-int MPU9250::CalibrateGyro(CALIB_PARAMS &calib){
+int MPU9250::calibrate_gyro(CALIB_PARAMS &calib){
 	uint8_t buf[6];
 	int16_t gx,gy,gz;
 	int32_t gxAccum, gyAccum, gzAccum;
@@ -159,7 +159,7 @@ int MPU9250::CalibrateGyro(CALIB_PARAMS &calib){
 		foundBadData = 0;
 		gxAccum = gyAccum = gzAccum = 0;
 		for (int inx = 0; inx < GYRO_NUM_CALIB_SAMPLES; inx++){
-			ReadBytes(MPU9250_I2C_ADDRESS, GYRO_XOUT_H, 6, buf);
+			read_bytes(MPU9250_I2C_ADDRESS, GYRO_XOUT_H, 6, buf);
 			gx = (int16_t)(((uint16_t)buf[0] << 8) | (uint16_t)buf[1]);
 			gy = (int16_t)(((uint16_t)buf[2] << 8) | (uint16_t)buf[3]);
 			gz = (int16_t)(((uint16_t)buf[4] << 8) | (uint16_t)buf[5]);	
@@ -174,7 +174,7 @@ int MPU9250::CalibrateGyro(CALIB_PARAMS &calib){
 				foundBadData = 1;
 				// generate a low tone pulse each time calibration fails. If you hear this even when the unit is left undisturbed for calibration,
 				// the MPU9250 gyro has a high bias on one or more axes, you will need to increase the configuration parameter gyroOffsetLimit1000DPS. 
-				audio_GenerateTone(200, 300); 
+				audio_generate_tone(200, 300); 
 				break;
 				}  
 			gxAccum  += (int32_t) gx;
@@ -201,14 +201,14 @@ int MPU9250::CalibrateGyro(CALIB_PARAMS &calib){
 	}
 
 
-void MPU9250::WriteByte(uint8_t deviceAddress, uint8_t registerAddress, uint8_t d) {
+void MPU9250::write_byte(uint8_t deviceAddress, uint8_t registerAddress, uint8_t d) {
 	Wire.beginTransmission(deviceAddress);  
 	Wire.write(registerAddress);
 	Wire.write(d);           
 	Wire.endTransmission();     
 	}
 
-uint8_t MPU9250::ReadByte(uint8_t deviceAddress, uint8_t registerAddress){
+uint8_t MPU9250::read_byte(uint8_t deviceAddress, uint8_t registerAddress){
 	uint8_t d; 
 	Wire.beginTransmission(deviceAddress);
 	Wire.write(registerAddress);
@@ -218,7 +218,7 @@ uint8_t MPU9250::ReadByte(uint8_t deviceAddress, uint8_t registerAddress){
 	return d;
 	}
 
-int MPU9250::ReadBytes(uint8_t deviceAddress, uint8_t registerAddress, uint8_t count, uint8_t * dest) {
+int MPU9250::read_bytes(uint8_t deviceAddress, uint8_t registerAddress, uint8_t count, uint8_t * dest) {
 	Wire.beginTransmission(deviceAddress);
 	Wire.write(registerAddress);
 	Wire.endTransmission(false); // restart

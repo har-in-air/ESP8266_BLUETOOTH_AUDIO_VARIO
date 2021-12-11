@@ -1,5 +1,7 @@
-#include "MahonyAHRS.h"
+#include <Arduino.h>
 #include <math.h>
+#include "config.h"
+#include "imu.h"
 #include "util.h"
 
 //#define twoKpDef	(2.0f * 0.5f)	// 2 * proportional gain
@@ -18,7 +20,7 @@ volatile float integralFBy = 0.0f;
 volatile float integralFBz = 0.0f;	// integral error terms scaled by Ki
 
 
-void imu_MahonyAHRSupdate9DOF(int bUseAccel, int bUseMag, float dt, float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz) {
+void imu_mahonyAHRS_update9DOF(int bUseAccel, int bUseMag, float dt, float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz) {
 	float invNorm;
   	float q0q0, q0q1, q0q2, q0q3, q1q1, q1q2, q1q3, q2q2, q2q3, q3q3;  
 	float hx, hy, bx, bz;
@@ -28,7 +30,7 @@ void imu_MahonyAHRSupdate9DOF(int bUseAccel, int bUseMag, float dt, float gx, fl
 
 	// Use 6dof  algorithm if magnetometer measurement invalid
 	if(!bUseMag) {
-		imu_MahonyAHRSupdate6DOF(bUseAccel,dt, gx, gy, gz, ax, ay, az);
+		imu_mahonyAHRS_update6DOF(bUseAccel,dt, gx, gy, gz, ax, ay, az);
 		return;
 		}
 
@@ -118,7 +120,7 @@ void imu_MahonyAHRSupdate9DOF(int bUseAccel, int bUseMag, float dt, float gx, fl
 	}
 
 
-void imu_MahonyAHRSupdate6DOF(int bUseAccel, float dt, float gx, float gy, float gz, float ax, float ay, float az) {
+void imu_mahonyAHRS_update6DOF(int bUseAccel, float dt, float gx, float gy, float gz, float ax, float ay, float az) {
 	float invNorm;
 	float halfvx, halfvy, halfvz;
 	float halfex, halfey, halfez;
@@ -184,7 +186,7 @@ void imu_MahonyAHRSupdate6DOF(int bUseAccel, float dt, float gx, float gy, float
 	}
 
 // HN
-void imu_Quaternion2YawPitchRoll(float q0, float q1, float q2, float q3, float* pYawDeg, float* pPitchDeg, float* pRollDeg) {
+void imu_quaternion_to_yaw_pitch_roll(float q0, float q1, float q2, float q3, float* pYawDeg, float* pPitchDeg, float* pRollDeg) {
     float invNorm = 1.0f/sqrt(q0*q0 + q1*q1 + q2*q2 + q3*q3);
     q0 *= invNorm;
     q1 *= invNorm;
@@ -196,7 +198,7 @@ void imu_Quaternion2YawPitchRoll(float q0, float q1, float q2, float q3, float* 
     *pRollDeg  = _180_DIV_PI * atan2(2.0f * (q0*q1 + q2*q3), q0*q0 - q1*q1 - q2*q2 + q3*q3);
     }
 
-float imu_GravityCompensatedAccel(float ax, float ay, float az, float q0, float q1, float q2, float q3) {
+float imu_gravity_compensated_accel(float ax, float ay, float az, float q0, float q1, float q2, float q3) {
     float acc = 2.0*(q1*q3 - q0*q2)*ax + 2.0f*(q0*q1 + q2*q3)*ay + (q0*q0 - q1*q1 - q2*q2 + q3*q3)*az - 1000.0f;
     acc *= 0.98f; // in cm/s/s, assuming ax, ay, az are in milli-Gs
 	  return acc;

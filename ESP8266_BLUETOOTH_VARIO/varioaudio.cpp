@@ -3,10 +3,10 @@
 #include "nvd.h"
 #include "audio.h"
 #include "util.h"
-#include "VarioAudio.h"
+#include "varioaudio.h"
 
 
-void VarioAudio::Config() {
+void VarioAudio::config() {
     sinkToneCps_    =  (int32_t)Nvd.par.cfg.vario.sinkThresholdCps;
     climbToneCps_   =  (int32_t)Nvd.par.cfg.vario.climbThresholdCps;
     zeroesToneCps_  =  (int32_t)Nvd.par.cfg.vario.zeroThresholdCps;
@@ -25,7 +25,7 @@ void VarioAudio::Config() {
     }
 
 
-void VarioAudio::Beep(int32_t nCps) {
+void VarioAudio::beep(int32_t nCps) {
   int32_t newFreqHz = 0;
   // generate new beep/tone only if 
   if (
@@ -48,7 +48,7 @@ void VarioAudio::Beep(int32_t nCps) {
         beepEndTick_ = 8;
     		newFreqHz = offScaleLoTone_[0];
     		freqHz_ = newFreqHz;
-        audio_SetFrequency(freqHz_);
+        audio_set_frequency(freqHz_);
         }
       else {
         beepPeriodTicks_ = 40; // sink indicated with descending frequency beeps with long on-times
@@ -57,7 +57,7 @@ void VarioAudio::Beep(int32_t nCps) {
         newFreqHz = VARIO_SPKR_MAX_FREQHZ/2 + ((varioCps_ + VARIO_MAX_CPS)*(VARIO_SPKR_MIN_FREQHZ + 600 - VARIO_SPKR_MAX_FREQHZ/2))/(sinkToneCps_ + VARIO_MAX_CPS);
         CLAMP(newFreqHz, VARIO_SPKR_MIN_FREQHZ, VARIO_SPKR_MAX_FREQHZ);
         freqHz_ = newFreqHz;
-        audio_SetFrequency(freqHz_);
+        audio_set_frequency(freqHz_);
         }
       }
     //if climbing, generate beeps
@@ -70,7 +70,7 @@ void VarioAudio::Beep(int32_t nCps) {
           beepEndTick_ = 8;
           newFreqHz = offScaleHiTone_[0];
           freqHz_ = newFreqHz;
-          audio_SetFrequency(freqHz_);
+          audio_set_frequency(freqHz_);
           }
         else {
           int index = varioCps_/100;
@@ -85,7 +85,7 @@ void VarioAudio::Beep(int32_t nCps) {
             }
           CLAMP(newFreqHz, VARIO_SPKR_MIN_FREQHZ, VARIO_SPKR_MAX_FREQHZ);
           freqHz_ = newFreqHz;
-          audio_SetFrequency(freqHz_);
+          audio_set_frequency(freqHz_);
           }
         }
       else   // in "zeroes" band, indicate with a short pulse and long interval
@@ -97,7 +97,7 @@ void VarioAudio::Beep(int32_t nCps) {
     		newFreqHz = VARIO_SPKR_MIN_FREQHZ + ((varioCps_ - zeroesToneCps_)*(VARIO_CROSSOVER_FREQHZ - VARIO_SPKR_MIN_FREQHZ))/(crossoverCps_ - zeroesToneCps_);
         CLAMP(newFreqHz, VARIO_SPKR_MIN_FREQHZ, VARIO_SPKR_MAX_FREQHZ);
         freqHz_ = newFreqHz;
-        audio_SetFrequency(freqHz_);
+        audio_set_frequency(freqHz_);
         }
       // between zeroes threshold and sink threshold, chillout
       else{
@@ -106,7 +106,7 @@ void VarioAudio::Beep(int32_t nCps) {
         beepPeriodTicks_ = 0;
         beepEndTick_  = 0;
         freqHz_ = 0;
-        audio_SetFrequency(freqHz_);
+        audio_set_frequency(freqHz_);
         }
       }
     }
@@ -133,7 +133,7 @@ void VarioAudio::Beep(int32_t nCps) {
       }
     if (newFreqHz != freqHz_) {
       freqHz_ = newFreqHz;
-      audio_SetFrequency(freqHz_);
+      audio_set_frequency(freqHz_);
       }
 	  }
   }

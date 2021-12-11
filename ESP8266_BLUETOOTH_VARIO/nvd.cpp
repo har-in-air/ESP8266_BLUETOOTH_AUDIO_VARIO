@@ -8,12 +8,12 @@
 
 NVD Nvd;
 
-void nvd_Init(void)   {
+void nvd_init(void)   {
 	EEPROM.begin(NVD_SIZE_BYTES);
 	for (int inx = 0; inx < NVD_SIZE_BYTES; inx++) {
 		Nvd.buf[inx] = EEPROM.read(inx);
 		}
-	uint16_t checkSum = nvd_CheckSum();	
+	uint16_t checkSum = nvd_checksum();	
 #ifdef NVD_DEBUG	
     dbg_printf(("Sizeof(NVD_PARAMS) = %d bytes\r\n", sizeof(NVD_PARAMS)));
 	dbg_printf(("Calculated checkSum = 0x%04x\r\n", checkSum));	
@@ -50,14 +50,14 @@ void nvd_Init(void)   {
 		#ifdef NVD_DEBUG	
 		dbg_println(("ERROR!! NVD BAD CHECKSUM, SETTING DEFAULTS"));
 		#endif
-		nvd_setDefaults();
-		nvd_Commit();
+		nvd_set_defaults();
+		nvd_commit();
 		}
    EEPROM.end();
    }
 
 
-void nvd_setDefaults() {
+void nvd_set_defaults() {
     Nvd.par.calib.axBias = 0;
     Nvd.par.calib.ayBias = 0;
     Nvd.par.calib.azBias = 0;
@@ -78,7 +78,7 @@ void nvd_setDefaults() {
 	}
 
    
-uint16_t nvd_CheckSum(void) {
+uint16_t nvd_checksum(void) {
 	uint16_t checkSum = 0;
 	int nBytes = sizeof(NVD_PARAMS)-2;
 	for (int inx = 0; inx < nBytes; inx++) {
@@ -88,8 +88,8 @@ uint16_t nvd_CheckSum(void) {
 	}
 	
 	
-void nvd_Commit(void) {
-	uint16_t checkSum = nvd_CheckSum();
+void nvd_commit(void) {
+	uint16_t checkSum = nvd_checksum();
 	Nvd.par.checkSum = ~checkSum;
 	int nBytes = sizeof(NVD_PARAMS);
 	for  (int inx = 0; inx < nBytes; inx++){
@@ -99,7 +99,7 @@ void nvd_Commit(void) {
 	}
 	
 
-void nvd_SaveCalibrationParams(CALIB_PARAMS &calib) {
+void nvd_save_calib_params(CALIB_PARAMS &calib) {
 	EEPROM.begin(sizeof(NVD_PARAMS));
 	Nvd.par.calib.axBias = calib.axBias;
 	Nvd.par.calib.ayBias = calib.ayBias;
@@ -107,16 +107,16 @@ void nvd_SaveCalibrationParams(CALIB_PARAMS &calib) {
 	Nvd.par.calib.gxBias = calib.gxBias;
 	Nvd.par.calib.gyBias = calib.gyBias;
 	Nvd.par.calib.gzBias = calib.gzBias;
-	nvd_Commit();
+	nvd_commit();
 	EEPROM.end();
 	}	
 	
-void nvd_SaveConfigurationParams(CONFIG_PARAMS &cfg) {
+void nvd_save_config_params(CONFIG_PARAMS &cfg) {
 	EEPROM.begin(sizeof(NVD_PARAMS));
 	memcpy(&Nvd.par.cfg.vario, &cfg.vario, sizeof(VARIO_PARAMS));
 	memcpy(&Nvd.par.cfg.kf, &cfg.kf, sizeof(KALMAN_FILTER_PARAMS));
 	memcpy(&Nvd.par.cfg.misc, &cfg.misc, sizeof(MISC_PARAMS));
-	nvd_Commit();
+	nvd_commit();
 	EEPROM.end();
 	}	
 	

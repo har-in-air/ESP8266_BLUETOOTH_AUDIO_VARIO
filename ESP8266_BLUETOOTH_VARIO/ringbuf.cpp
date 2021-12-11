@@ -10,14 +10,14 @@ void ringbuf_init() {
    RingBuf.head = RINGBUF_SIZE-1;
    }
 
-void ringbuf_addSample(float sample) {
+void ringbuf_add_sample(float sample) {
    RingBuf.head++;
    if (RingBuf.head >= RINGBUF_SIZE) RingBuf.head = 0;
    RingBuf.buffer[RingBuf.head] = sample;
    }
 
 
-float ringbuf_averageOldestSamples(int numSamples) {
+float ringbuf_average_oldest_samples(int numSamples) {
    int index = RingBuf.head+1; // oldest Sample
    float accum = 0.0f;
    for (int count = 0; count < numSamples; count++) {
@@ -28,7 +28,7 @@ float ringbuf_averageOldestSamples(int numSamples) {
    return accum/numSamples;
    }   
 
-float ringbuf_averageNewestSamples(int numSamples) {
+float ringbuf_average_newest_samples(int numSamples) {
    int index = RingBuf.head; // newest Sample
    float accum = 0.0f;
    for (int count = 0; count < numSamples; count++) {

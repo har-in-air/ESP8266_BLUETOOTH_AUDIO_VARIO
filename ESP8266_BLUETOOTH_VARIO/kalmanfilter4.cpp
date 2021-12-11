@@ -5,7 +5,6 @@
 
 static const char* TAG = "kalmanfilter4";
 
-
 typedef struct KF4_STATE_ {
 	float z; // altitude
 	float v; // climb/sink rate

@@ -9,8 +9,8 @@ typedef struct RINGBUF_ {
 } RINGBUF;
 
 void ringbuf_init();
-void ringbuf_addSample(float sample);
-float ringbuf_averageOldestSamples(int numSamples);
-float ringbuf_averageNewestSamples(int numSamples);
+void ringbuf_add_sample(float sample);
+float ringbuf_average_oldest_samples(int numSamples);
+float ringbuf_average_newest_samples(int numSamples);
 
 #endif

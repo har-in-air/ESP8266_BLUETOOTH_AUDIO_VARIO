@@ -11,17 +11,16 @@
 //
 //=====================================================================================================
 // modified HN to use acceleration feedback based on input flag
-#ifndef MahonyAHRS_h
-#define MahonyAHRS_h
+#ifndef IMU_H_
+#define IMU_H_
 
 // quaternion of sensor frame relative to auxiliary frame
 extern volatile float Q0, Q1, Q2, Q3;
 
-void imu_MahonyAHRSupdate9DOF(int bUseAccel, int bUseMag, float dt, float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz);
-void imu_MahonyAHRSupdate6DOF(int bUseAccel, float dt, float gx, float gy, float gz, float ax, float ay, float az);
-void imu_MadgwickAHRSupdate6DOF(int bUseAccel, float dt, float gx, float gy, float gz, float ax, float ay, float az);
+void imu_mahonyAHRS_update9DOF(int bUseAccel, int bUseMag, float dt, float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz);
+void imu_mahonyAHRS_update6DOF(int bUseAccel, float dt, float gx, float gy, float gz, float ax, float ay, float az);
 
 // HN
-void imu_Quaternion2YawPitchRoll(float q0, float q1, float q2, float q3, float* pYawDeg, float* pPitchDeg, float* pRollDeg);
-float imu_GravityCompensatedAccel(float ax, float ay, float az, float q0, float q1, float q2, float q3);
+void imu_quaternion_to_yaw_pitch_roll(float q0, float q1, float q2, float q3, float* pYawDeg, float* pPitchDeg, float* pRollDeg);
+float imu_gravity_compensated_accel(float ax, float ay, float az, float q0, float q1, float q2, float q3);
 #endif

@@ -1,13 +1,13 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include "config.h"
-#include "MS5611.h"
+#include "ms5611.h"
 
 MS5611::MS5611() {
-	paSample_ = 0.0f;
-	zCmSample_ = 0.0f;
-	celsiusSample_ = 0;
-	zCmAvg_ = 0.0f;
+	pressurePa = 0.0f;
+	altitudeCm = 0.0f;
+	altitudeCmAvg = 0.0f;
+	temperatureC = 0;
 	}
 
 #if 0	
@@ -17,7 +17,7 @@ extern char gszBuf[];
 static float pa[MAX_TEST_SAMPLES];
 static float z[MAX_TEST_SAMPLES];
 
-void MS5611::Test(int nSamples) {
+void MS5611::test(int nSamples) {
 	int n;
     float paMean, zMean, zVariance, paVariance;
     paMean = 0.0f;
@@ -25,15 +25,15 @@ void MS5611::Test(int nSamples) {
     paVariance = 0.0f;
     zVariance = 0.0f;
     for (n = 0; n < nSamples; n++) {
-	    TriggerTemperatureSample();
+	    trigger_temperature_sample();
 	    delay(MS5611_SAMPLE_PERIOD_MS);
-	    D2_ = ReadSample();
-	    CalculateTemperatureCx10();
-		TriggerPressureSample();
+	    D2_ = read_sample();
+	    calculate_temperatureCx10();
+		trigger_pressure_sample();
 		delay(MS5611_SAMPLE_PERIOD_MS);
 		D1_ = ReadSample();
-		pa[n] = CalculatePressurePa();
-        z[n] =  Pa2Cm(pa[n]);
+		pa[n] = calculate_pressurePa();
+        z[n] =  pa_to_cm(pa[n]);
         paMean += pa[n];
         zMean += z[n];
         }
@@ -51,42 +51,42 @@ void MS5611::Test(int nSamples) {
 	}
 #endif
 
-void MS5611::AveragedSample(int nSamples) {
+void MS5611::averaged_sample(int nSamples) {
 	int32_t tc,tAccum,n;
     float pa,pAccum;
 	pAccum = 0.0f;
     tAccum = 0;
 	n = 2;
     while (n--) {
-    	TriggerTemperatureSample();
+    	trigger_temperature_sample();
     	delay(MS5611_SAMPLE_PERIOD_MS);
-		D2_ = ReadSample();
-		TriggerPressureSample();
+		D2_ = read_sample();
+		trigger_pressure_sample();
 		delay(MS5611_SAMPLE_PERIOD_MS);
-		D1_ = ReadSample();
+		D1_ = read_sample();
 		}
 	
 	n = nSamples;
     while (n--) {
-    	TriggerTemperatureSample();
+    	trigger_temperature_sample();
     	delay(MS5611_SAMPLE_PERIOD_MS);
-		D2_ = ReadSample();
-		CalculateTemperatureCx10();
-		TriggerPressureSample();
+		D2_ = read_sample();
+		calculate_temperatureCx10();
+		trigger_pressure_sample();
 		delay(MS5611_SAMPLE_PERIOD_MS);
-		D1_ = ReadSample();
-		pa = CalculatePressurePa();
+		D1_ = read_sample();
+		pa = calculate_pressurePa();
 		pAccum += pa;
 		tAccum += tempCx100_;
 		}
 	tc = tAccum/nSamples;
-	celsiusSample_ = (tc >= 0 ?  (tc+50)/100 : (tc-50)/100);
-	paSample_ = (pAccum+nSamples/2)/nSamples;
-	zCmAvg_ = zCmSample_ = Pa2Cm(paSample_);
+	temperatureC = (tc >= 0 ?  (tc+50)/100 : (tc-50)/100);
+	pressurePa = (pAccum+nSamples/2)/nSamples;
+	altitudeCmAvg = altitudeCm = pa_to_cm(pressurePa);
 #ifdef MS5611_DEBUG
-   dbg_printf(("Tavg : %dC\r\n",celsiusSample_));
-   dbg_printf(("Pavg : %dPa\r\n",(int)paSample_));
-   dbg_printf(("Zavg : %dcm\r\n",(int)zCmAvg_));
+   dbg_printf(("Tavg : %dC\r\n", temperatureC));
+   dbg_printf(("Pavg : %dPa\r\n",(int)pressurePa));
+   dbg_printf(("Zavg : %dcm\r\n",(int)altitudeCmAvg));
 #endif
 
 	}
@@ -96,7 +96,7 @@ void MS5611::AveragedSample(int nSamples) {
 /// Fast Lookup+Interpolation method for converting pressure readings to altitude readings.
 #include "pztbl.h"
 
-float MS5611::Pa2Cm(float paf)  {
+float MS5611::pa_to_cm(float paf)  {
    	int32_t pa,inx,pa1,z1,z2;
     float zf;
     pa = (int32_t)(paf);
@@ -119,13 +119,13 @@ float MS5611::Pa2Cm(float paf)  {
    	return zf;
    	}
 
-void MS5611::CalculateTemperatureCx10(void) {
+void MS5611::calculate_temperatureCx10(void) {
 	dT_ = (int64_t)D2_ - tref_;
 	tempCx100_ = 2000 + ((dT_*((int32_t)cal_[5]))>>23);
 	}
 
 
-float MS5611::CalculatePressurePa(void) {
+float MS5611::calculate_pressurePa(void) {
 	float pa;
     int64_t offset, sens,offset2,sens2,t2;
 	offset = offT1_ + ((((int64_t)cal_[3])*dT_)>>7);
@@ -149,20 +149,20 @@ float MS5611::CalculatePressurePa(void) {
 
 
 /// Trigger a pressure sample with max oversampling rate
-void MS5611::TriggerPressureSample(void) {
+void MS5611::trigger_pressure_sample(void) {
 	Wire.beginTransmission(MS5611_I2C_ADDRESS);  
 	Wire.write(MS5611_CONVERT_D1 | MS5611_ADC_4096);  //  pressure conversion, max oversampling
 	Wire.endTransmission();  
    }
 
 /// Trigger a temperature sample with max oversampling rate
-void MS5611::TriggerTemperatureSample(void) {
+void MS5611::trigger_temperature_sample(void) {
 	Wire.beginTransmission(MS5611_I2C_ADDRESS);  
 	Wire.write(MS5611_CONVERT_D2 | MS5611_ADC_4096);   //  temperature conversion, max oversampling
 	Wire.endTransmission();  
    }
 
-uint32_t MS5611::ReadSample(void)	{
+uint32_t MS5611::read_sample(void)	{
 	Wire.beginTransmission(MS5611_I2C_ADDRESS);  // Initialize the Tx buffer
 	Wire.write(0x00);                        // Put ADC read command in Tx buffer
 	Wire.endTransmission(false);        // Send the Tx buffer, but send a restart to keep connection alive
@@ -177,35 +177,35 @@ uint32_t MS5611::ReadSample(void)	{
    }
 
 
-void MS5611::InitializeSampleStateMachine(void) {
-   TriggerTemperatureSample();
+void MS5611::init_sample_state_machine(void) {
+   trigger_temperature_sample();
    sensorState = MS5611_READ_TEMPERATURE;
    }
 
-int MS5611::SampleStateMachine(void) {
+int MS5611::sample_state_machine(void) {
    if (sensorState == MS5611_READ_TEMPERATURE) {
-      D2_ = ReadSample();
-      TriggerPressureSample();
+      D2_ = read_sample();
+      trigger_pressure_sample();
       //DBG_1(); // turn on the debug pulse for timing the critical computation
-      CalculateTemperatureCx10();
+      calculate_temperatureCx10();
       //celsiusSample_ = (tempCx100_ >= 0? (tempCx100_+50)/100 : (tempCx100_-50)/100);
-      paSample_ = CalculatePressurePa();
-	  zCmSample_ = Pa2Cm(paSample_);
+      pressurePa = calculate_pressurePa();
+	  altitudeCm = pa_to_cm(pressurePa);
       //DBG_0();
 	  sensorState = MS5611_READ_PRESSURE;
       return 1;  // 1 => new altitude sample is available
       }
    else
    if (sensorState == MS5611_READ_PRESSURE) {
-      D1_ = ReadSample();
-      TriggerTemperatureSample();
+      D1_ = read_sample();
+      trigger_temperature_sample();
       sensorState = MS5611_READ_TEMPERATURE;
       return 0; // 0 => intermediate state
       }
    return 0;    
    }
 
-void MS5611::Reset() {
+void MS5611::reset() {
 	Wire.beginTransmission(MS5611_I2C_ADDRESS);  
 	Wire.write(MS5611_RESET);                
 	Wire.endTransmission();       
@@ -213,7 +213,7 @@ void MS5611::Reset() {
     }
    
 	
-void MS5611::GetCalibrationCoefficients(void)  {
+void MS5611::get_calib_coefficients(void)  {
     for (int inx = 0; inx < 6; inx++) {
 		int promIndex = 2 + inx*2; 
 		cal_[inx] = (((uint16_t)prom_[promIndex])<<8) | (uint16_t)prom_[promIndex+1];
@@ -226,7 +226,7 @@ void MS5611::GetCalibrationCoefficients(void)  {
     sensT1_ = ((int64_t)cal_[0])<<15;		
     }
    
-int MS5611::ReadPROM(void)    {
+int MS5611::read_prom(void)    {
     for (int inx = 0; inx < 8; inx++) {
 		Wire.beginTransmission(MS5611_I2C_ADDRESS); 
 		Wire.write(0xA0 + inx*2); 
@@ -244,12 +244,12 @@ int MS5611::ReadPROM(void)    {
 	//	}
 	//dbg_println(());
 	uint8_t crcPROM = prom_[15] & 0x0F;
-	uint8_t crcCalculated = CRC4(prom_);
+	uint8_t crcCalculated = crc4(prom_);
 	return (crcCalculated == crcPROM ? 1 : 0);
 	}
 	
 	
-uint8_t MS5611::CRC4(uint8_t prom[] ) {
+uint8_t MS5611::crc4(uint8_t prom[] ) {
 	 int cnt, nbit; 
 	 uint16_t crcRemainder; 
 	 uint8_t crcSave = prom[15]; // crc byte in PROM

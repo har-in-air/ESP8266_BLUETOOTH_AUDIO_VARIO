@@ -8,7 +8,7 @@
 #include "config.h"
 #include "nvd.h"
 #include "adc.h"
-#include "wificonfig.h"
+#include "wificfg.h"
 
 static const char* TAG = "wificonfig";
 
@@ -35,7 +35,7 @@ static float BatteryVoltage;
 static void server_not_found(AsyncWebServerRequest *request);
 static String server_string_processor(const String& var);
 
-void wificonfig_wifiOn() {
+void wificfg_wifi_on() {
   wifi_fpm_do_wakeup();
   wifi_fpm_close();
   delay(100);
@@ -43,7 +43,7 @@ void wificonfig_wifiOn() {
 
 #define FPM_SLEEP_MAX_TIME 0xFFFFFFF
 
-void wificonfig_wifiOff() {
+void wificfg_wifi_off() {
   wifi_station_disconnect();
   wifi_set_opmode(NULL_MODE);
   wifi_set_sleep_type(MODEM_SLEEP_T);
@@ -162,8 +162,8 @@ static String server_string_processor(const String& var){
   }
 
 
-void wifi_access_point_init() {
-	wificonfig_wifiOn();  
+void wificfg_ap_server_init() {
+	wificfg_wifi_on();  
   delay(100);
 #ifdef STATION  
   WiFi.mode(WIFI_STA);
@@ -192,7 +192,7 @@ void wifi_access_point_init() {
   pServer->onNotFound(server_not_found);
   // Send web page with input fields to client
   pServer->on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    int adcVal = adc_sampleAverage();
+    int adcVal = adc_sample_average();
     BatteryVoltage = adc_battery_voltage(adcVal);
     request->send(LittleFS, "/index.html", String(), false, server_string_processor);
   });
@@ -202,8 +202,8 @@ void wifi_access_point_init() {
   });
 
   pServer->on("/defaults", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    nvd_setDefaults();
-    nvd_SaveConfigurationParams(Nvd.par.cfg);
+    nvd_set_defaults();
+    nvd_save_config_params(Nvd.par.cfg);
     request->send(200, "text/html", "Default options set<br><a href=\"/\">Return to Home Page</a>");  
   });
 
@@ -251,9 +251,10 @@ void wifi_access_point_init() {
       bChange = true; 
       cfg.misc.sleepTimeoutMinutes = inputMessage.toInt();
       }
+
     if (bChange == true) {
       dbg_println(("Config parameters changed"));
-      nvd_SaveConfigurationParams(cfg);
+      nvd_save_config_params(cfg);
       bChange = false;
       }
     request->send(200, "text/html", "Input Processed<br><a href=\"/\">Return to Home Page</a>");  

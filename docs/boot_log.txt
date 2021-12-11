@@ -1,17 +1,17 @@
-ESP8266 BLUETOOTH VARIO compiled on Dec 10 2021 at 19:15:51
-Firmware Revision 0.97
+ESP8266 BLUETOOTH VARIO compiled on Dec 11 2021 at 18:57:26
+Firmware Revision 0.99
 
 Checking non-volatile data (calibration and configuration)
-Sizeof(NVD_PARAMS) = 32 bytes
-Calculated checkSum = 0x0034
-Saved checkSum = ~0x0034
+Sizeof(NVD_PARAMS) = 30 bytes
+Calculated checkSum = 0x0032
+Saved checkSum = ~0x0032
 NVD checkSum OK
 
 ACCEL & GYRO Calibration Values
-axBias = -209
-ayBias = -72
-azBias = 101
-gxBias = 20
+axBias = -253
+ayBias = -68
+azBias = 119
+gxBias = 26
 gyBias = -11
 gzBias = 23
 VARIO
@@ -23,7 +23,6 @@ KALMAN FILTER
 accelVariance = 100
 zMeasVariance = 200
 MISCELLANEOUS
-gyroOffsetLimit1000DPS = 50
 sleepTimeoutMinutes = 15
 bluetoothEnable = 1
 To start web configuration mode, press and hold the pgmconfcal button
@@ -33,7 +32,7 @@ until you hear a low-frequency tone start. Then release the button
 2
 1
 
-Battery voltage = 3.90V
+Battery voltage = 4.07V
 Vario mode
 Enabling Bluetooth
 
@@ -45,10 +44,10 @@ MS5611 OK
 Checking communication with MPU9250
 MPU9250 OK
 Calibration parameters from NVD
-Accel : axBias -209, ayBias -72, azBias 101
-Gyro : gxBias 20, gyBias -11, gzBias 23
+Accel : axBias -253, ayBias -68, azBias 119
+Gyro : gxBias 26, gyBias -11, gzBias 23
 Counting down to gyro calibration
-Press the PGM/CONF/CAL button to enforce accelerometer calibration first
+Press the PGCC button to enforce accelerometer calibration first
 10
 9
 8
@@ -62,16 +61,16 @@ Press the PGM/CONF/CAL button to enforce accelerometer calibration first
 
 Calibrating gyro
 Num Tries = 1
-gxBias = 18
+gxBias = 25
 gyBias = -10
-gzBias = 23
+gzBias = 22
 Gyro calibration OK
 
 MS5611 config
 MS5611 Calibration Coeffs : 48939 50595 29263 26380 30963 26826
-Tavg : 33C
-Pavg : 91523Pa
-Zavg : 84984cm
+Tavg : 28C
+Pavg : 91452Pa
+Zavg : 85631cm
 
 KalmanFilter config
 climbToneCps = 50
@@ -79,4 +78,4 @@ zeroesToneCps = 5
 sinkToneCps = -250
 crossoverCps = 400
 
-Starting vario with bluetooth LK8EX1 messages @ 10Hz
+Starting Vario with bluetooth LK8EX1 messages @ 10Hz
