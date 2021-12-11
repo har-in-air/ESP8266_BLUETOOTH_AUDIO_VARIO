@@ -5,9 +5,7 @@
 * Bluetooth transmission of LK8EX1 sentences. You can use 
 flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tablet with accurate barometric altitude and climb/sink rate data.
 * WiFi webpage configuration with the vario acting as an access point and web server.
-<img src="docs/wifi_config_webpage.png">
 * WiFi Over-the-air (OTA) firmware update 
-<img src="docs/firmware_update.png">
 * Optional push-pull L9110S driver with conventional loudspeakers for higher volume. 
 * Optional torch/lantern mode using a 0.5W white led. This is accessed with a long press of a button when the unit is in vario mode. Once in lantern mode, you can cycle through 3 different brightness levels and an S.O.S. flasher mode.
 * PCB design with same form factor as a single-cell 18650 power bank case. 
@@ -107,6 +105,8 @@ partition image or the firmware binary.
 * [This is a startup serial monitor log of the vario with calibrated accelerometer.](docs/boot_log.txt). 
 * This project uses the KF4D kalman filter algorithm from the [ESP32_IMU_GPS_BARO_VARIO](https://github.com/har-in-air/ESP32_IMU_BARO_GPS_VARIO) project.
 * To put the vario into WiFi configuration mode, switch on the vario and press the `PGCC` button. Keep it pressed until you hear a confirmation tone, then release. You can now connect to the WiFi Access Point `"ESP8266Vario"` (no password needed). Now, access the url `http://192.168.4.1` in a browser.
+<img src="docs/wifi_config_webpage.png">
 * To update the firmware, access the url `http://192.168.4.1/update`. 
 Upload the new firmware binary `.bin` file. Reboot the vario. Select WiFi configuration mode again, and confirm the firmware revision string has changed (assuming it has been updated along with code changes).<br>
 Note : To export the compiled firmware binary file to the sketch folder, use the `Sketch->Export compiled binary` command. 
+<img src="docs/firmware_update.png">
