@@ -5,23 +5,14 @@
 * Bluetooth transmission of LK8EX1 sentences. You can use 
 flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tablet with accurate barometric altitude and climb/sink rate data.
 * WiFi webpage configuration with the vario acting as an access point and web server.
-<br>
-<br>
 <img src="docs/wifi_config_webpage.png">
-<br>
-<br>
 * WiFi Over-the-air (OTA) firmware update 
-<br>
-<br>
 <img src="docs/firmware_update.png">
-<br>
-<br>
 * Optional push-pull L9110S driver with conventional loudspeakers for higher volume. 
 * Optional torch/lantern mode using a 0.5W white led. This is accessed with a long press of a button when the unit is in vario mode. Once in lantern mode, you can cycle through 3 different brightness levels and an S.O.S. flasher mode.
 * PCB design with same form factor as a single-cell 18650 power bank case. 
 <br>
 <br>
-
 ## Software Build Environment 
 * Ubuntu 20.04 LTS AMDx64
 * Arduino IDE version 1.8.16
