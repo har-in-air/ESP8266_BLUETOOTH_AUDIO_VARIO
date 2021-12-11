@@ -9,8 +9,7 @@ flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tabl
 * Optional push-pull L9110S driver with conventional loudspeakers for higher volume. 
 * Optional torch/lantern mode using a 0.5W white led. This is accessed with a long press of a button when the unit is in vario mode. Once in lantern mode, you can cycle through 3 different brightness levels and an S.O.S. flasher mode.
 * PCB design with same form factor as a single-cell 18650 power bank case. 
-<br>
-<br>
+
 ## Software Build Environment 
 * Ubuntu 20.04 LTS AMDx64
 * Arduino IDE version 1.8.16
@@ -28,7 +27,6 @@ flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tabl
   * [Exported schematic PDF](hw/esp8266_bluetooth_vario_schematic.pdf)
   * [PCB layout Gerber Zip](hw/esp8266_bluetooth_vario_gerber.zip)
   * [Archived Kicad project](hw/kicad_vario.zip)
-
 
 [EasyEDA online visualization](https://gerber-viewer.easyeda.com/showcase) of PCB layout. 
 
