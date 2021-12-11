@@ -26,7 +26,7 @@ flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tabl
 * Kicad used for schematic and layout
   * [Exported schematic PDF](hw/esp8266_bluetooth_vario_schematic.pdf)
   * [PCB layout Gerber Zip](hw/esp8266_bluetooth_vario_gerber.zip)
-  * [Archived Kicad project](hw/kicad_vario.zip)
+  * [Archived Kicad project](hw/esp8266_bluetooth_vario_kicad.zip)
 
 [EasyEDA online visualization](https://gerber-viewer.easyeda.com/showcase) of PCB layout. 
 
