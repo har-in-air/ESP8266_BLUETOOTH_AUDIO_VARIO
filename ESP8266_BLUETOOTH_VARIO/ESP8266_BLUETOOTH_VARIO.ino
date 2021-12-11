@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <FS.h>
+#include <LittleFS.h>
 #include "config.h"
 #include "board.h"
 #include "util.h"
@@ -63,7 +64,7 @@ MPU9250 Mpu9250;
 MS5611 Ms5611;
 VarioAudio Vario;
 
-const char* FirmwareRevision = "0.97";
+const char* FirmwareRevision = "0.98";
 
 // handles data ready interrupt from MPU9250
 void IRAM_ATTR drdy_InterruptHandler() {
@@ -179,8 +180,8 @@ void setup() {
 	dbg_println(("\r\nChecking non-volatile data (calibration and configuration)"));  
 	nvd_Init();
 
-	if (!SPIFFS.begin()){
-		dbg_println(("Error mounting SPIFFS"));
+	if (!LittleFS.begin()){
+		dbg_println(("Error mounting LittleFS"));
 		return;
 		}   
 

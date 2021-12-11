@@ -17,7 +17,7 @@ flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tabl
   * ESPAsyncTCP
   * ESPAsyncWebServer
   * AsyncElegantOTA
-* [ESP8266 Sketch Data Upload](https://github.com/esp8266/arduino-esp8266fs-plugin) plugin  
+* [ESP8266 LittleFS Data Upload](https://github.com/earlephilhower/arduino-esp8266littlefs-plugin/releases) plugin  
 
 ## Hardware 
 * ESP-12E/12F module (4Mbytes flash)
@@ -90,9 +90,8 @@ Battery current drain is `~37mA` operating as audio vario with bluetooth LK8EX1 
   * Flash Size : `4MB (FS:1MB OTA:~1019kB)`
   * CPU Frequency : `80MHz`
 * The first time you flash the ESP8266 with this project, select `Tools->"Erase Flash : All flash contents"`. 
-* Next, select the `Tools->ESP8266 Sketch Data Upload` option. This will build a SPIFFS partition with the contents of the `/data` directory, and then flash it to the ESP8266. 
-* Select `Tools->"Erase Flash : Only sketch"` option. From now on, use this option whether you are uploading the SPIFFS
-partition image or the firmware binary. 
+* Next, select the `Tools->ESP8266 LittleFS Data Upload` option. This will build a LittleFS partition with the contents of the `/data` directory, and then flash it to the ESP8266. 
+* Select `Tools->"Erase Flash : Only sketch"` option. From now on, use this option whether you are uploading the LittleFS partition image or the firmware binary. 
 * Build and flash the application firmware. 
 * Ensure the serial debug monitor is visible, then reset or power-cycle the EP8266 module. Since there is no calibration data, you will see a calibration error message. Follow the prompts to calibrate both accelerometer and gyroscope.
 [This is a startup serial monitor log after a full flash erase.](docs/calibration_log.txt). 

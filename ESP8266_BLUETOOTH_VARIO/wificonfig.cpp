@@ -4,6 +4,7 @@
 #include <ESPAsyncWebServer.h>
 #include <AsyncElegantOTA.h>
 #include <FS.h>
+#include <LittleFS.h>
 #include "config.h"
 #include "nvd.h"
 #include "adc.h"
@@ -193,11 +194,11 @@ void wifi_access_point_init() {
   pServer->on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     int adcVal = adc_sampleAverage();
     BatteryVoltage = adc_battery_voltage(adcVal);
-    request->send(SPIFFS, "/index.html", String(), false, server_string_processor);
+    request->send(LittleFS, "/index.html", String(), false, server_string_processor);
   });
 
   pServer->on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/style.css", "text/css");
+    request->send(LittleFS, "/style.css", "text/css");
   });
 
   pServer->on("/defaults", HTTP_GET, [] (AsyncWebServerRequest *request) {
