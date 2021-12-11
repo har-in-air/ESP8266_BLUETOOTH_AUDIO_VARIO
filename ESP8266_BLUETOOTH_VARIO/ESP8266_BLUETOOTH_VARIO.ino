@@ -18,18 +18,18 @@
 #include "ui.h"
 #include "btserial.h"
 
-int      appMode;
+int      AppMode;
 
-uint32_t timePreviousUs;
-uint32_t timeNowUs;
-float 	 imuTimeDeltaUSecs; // time between imu samples, in microseconds
-float 	 kfTimeDeltaUSecs; // time between kalman filter updates, in microseconds
+uint32_t TimePreviousUs;
+uint32_t TimeNowUs;
+float 	 ImuTimeDeltaUSecs; // time between imu samples, in microseconds
+float 	 KfTimeDeltaUSecs; // time between kalman filter updates, in microseconds
 
-float accelmG[3]; // in milli-Gs
-float gyroDps[3];  // in degrees/second
-float kfAltitudeCm = 0.0f;
-float kfClimbrateCps  = 0.0f; // filtered climbrate in cm/s
-int32_t audioCps; // rounded to nearest cm/s
+float AccelmG[3]; // in milli-Gs
+float GyroDps[3];  // in degrees/second
+float KfAltitudeCm = 0.0f;
+float KfClimbrateCps  = 0.0f; // filtered climbrate in cm/s
+int32_t AudioCps; // filtered climbrate, rounded to nearest cm/s
 
 // pinPGCC (GPIO0) has an external 10K pullup resistor to VCC, pressing the button 
 // will ground the pin.
@@ -48,44 +48,44 @@ int32_t audioCps; // rounded to nearest cm/s
 //    Accelerometer calibration is only required if the accel calibration values in 
 //    flash were never written, or were corrupted.
 
-volatile int drdyCounter;
-volatile boolean drdyFlag;
-volatile int sleepCounter;
-volatile int baroCounter;
-volatile int sleepTimeoutSecs;
+volatile int DrdyCounter;
+volatile boolean DrdyFlag;
+volatile int SleepCounter;
+volatile int BaroCounter;
+volatile int SleepTimeoutSecs;
 
 int LEDPwmLkp[4] = {LANTERN_DIM, LANTERN_LOW, LANTERN_MID, LANTERN_HI};
 int LanternState;
 
 boolean bWebConfigure = false;
 
-MPU9250 imu;
-MS5611 baro;
-VarioAudio vario;
+MPU9250 Mpu9250;
+MS5611 Ms5611;
+VarioAudio Vario;
 
 const char* FirmwareRevision = "0.97";
 
 // handles data ready interrupt from MPU9250
 void IRAM_ATTR drdy_InterruptHandler() {
-	drdyFlag = true;
-	drdyCounter++;
+	DrdyFlag = true;
+	DrdyCounter++;
 	}	
 
-// setup time markers for imu, baro and kalman filter
+// setup time markers for Mpu9250, Ms5611 and kalman filter
 void time_Init() {
-	timeNowUs = timePreviousUs = micros();
+	TimeNowUs = TimePreviousUs = micros();
 	}
 
 inline void time_Update(){
-	timeNowUs = micros();
-	imuTimeDeltaUSecs = timeNowUs > timePreviousUs ? (float)(timeNowUs - timePreviousUs) : 2000.0f; // if rollover use expected time difference
-	timePreviousUs = timeNowUs;
+	TimeNowUs = micros();
+	ImuTimeDeltaUSecs = TimeNowUs > TimePreviousUs ? (float)(TimeNowUs - TimePreviousUs) : 2000.0f; // if rollover use expected time difference
+	TimePreviousUs = TimeNowUs;
 	}
 
 
 void setupVario() {
 	dbg_println(("Vario mode"));
-	if (nvd.par.cfg.misc.bluetoothEnable) {
+	if (Nvd.par.cfg.misc.bluetoothEnable) {
 		dbg_println(("Enabling Bluetooth"));
 		digitalWrite(pinHM11Pwr, 1);
 		delay(300);
@@ -97,7 +97,7 @@ void setupVario() {
 	Wire.setClock(400000); // set i2c clock frequency AFTER Wire.begin()
 	delay(100);
 	dbg_println(("\r\nChecking communication with MS5611"));
-	if (!baro.ReadPROM()) {
+	if (!Ms5611.ReadPROM()) {
 		dbg_println(("Bad CRC read from MS5611 calibration PROM"));
 		Serial.flush();
 		indicateFaultMS5611(); 
@@ -106,48 +106,48 @@ void setupVario() {
 	dbg_println(("MS5611 OK"));
   
 	dbg_println(("\r\nChecking communication with MPU9250"));
-	if (!imu.CheckID()) {
-		dbg_println(("Error reading mpu9250 WHO_AM_I register"));
+	if (!Mpu9250.CheckID()) {
+		dbg_println(("Error reading Mpu9250 WHO_AM_I register"));
 		Serial.flush();
 		indicateFaultMPU9250();
 		goToSleep();   // switch off and then on to fix this
 		}
 	dbg_println(("MPU9250 OK"));
     
-	drdyCounter = 0;
-	drdyFlag = false;
+	DrdyCounter = 0;
+	DrdyFlag = false;
 	// interrupt output of MPU9250 is configured as push-pull, active high pulse. This is connected to
 	// pinDRDYInt (GPIO15) which already has an external 10K pull-down resistor (required for normal ESP8266 boot mode)
 	pinMode(pinDRDYInt, INPUT); 
 	attachInterrupt(digitalPinToInterrupt(pinDRDYInt), drdy_InterruptHandler, RISING);
 
 	// configure MPU9250 to start generating gyro and accel data  
-	imu.ConfigAccelGyro();
+	Mpu9250.ConfigAccelGyro();
 	calibrate_accel_gyro();
 	delay(100);  
 	  
 	dbg_println(("\r\nMS5611 config"));
-	baro.Reset();
-	baro.GetCalibrationCoefficients(); // load MS5611 factory programmed calibration data
-	baro.AveragedSample(4); // get an estimate of starting altitude
-	baro.InitializeSampleStateMachine(); // start the pressure & temperature sampling cycle
+	Ms5611.Reset();
+	Ms5611.GetCalibrationCoefficients(); // load MS5611 factory programmed calibration data
+	Ms5611.AveragedSample(4); // get an estimate of starting altitude
+	Ms5611.InitializeSampleStateMachine(); // start the pressure & temperature sampling cycle
 
 	dbg_println(("\r\nKalmanFilter config"));
-	// initialize kalman filter with barometer estimated altitude, and climbrate = 0.0
-	kalmanFilter4_configure((float)nvd.par.cfg.kf.zMeasVariance, 1000.0f*(float)nvd.par.cfg.kf.accelVariance, true, baro.zCmAvg_, 0.0f, 0.0f);
+	// initialize kalman filter with Ms5611meter estimated altitude, and climbrate = 0.0
+	kalmanFilter4_configure((float)Nvd.par.cfg.kf.zMeasVariance, 1000.0f*(float)Nvd.par.cfg.kf.accelVariance, true, Ms5611.zCmAvg_, 0.0f, 0.0f);
 
-	vario.Config();  
+	Vario.Config();  
 	time_Init();
-	kfTimeDeltaUSecs = 0.0f;
-	baroCounter = 0;
-	sleepTimeoutSecs = 0;
+	KfTimeDeltaUSecs = 0.0f;
+	BaroCounter = 0;
+	SleepTimeoutSecs = 0;
 	ringbuf_init(); 
-	sleepCounter = 0;
-	if (nvd.par.cfg.misc.bluetoothEnable ){
-		dbg_println(("\r\nStarting vario with bluetooth LK8EX1 messages @ 10Hz\r\n"));
+	SleepCounter = 0;
+	if (Nvd.par.cfg.misc.bluetoothEnable ){
+		dbg_println(("\r\nStarting Vario with bluetooth LK8EX1 messages @ 10Hz\r\n"));
 		}
 	else {
-		dbg_println(("\r\nStarting vario with bluetooth disabled\r\n"));  
+		dbg_println(("\r\nStarting Vario with bluetooth disabled\r\n"));  
 		}
 	}
 
@@ -207,7 +207,7 @@ void setup() {
 		}
   	else {
     	battery_IndicateVoltage();
-    	switch (appMode) {
+    	switch (AppMode) {
 			case APP_MODE_VARIO :
 			default :
 			setupVario();
@@ -223,15 +223,15 @@ void setup() {
 
 
 void vario_loop() {
-	if (drdyFlag == true) {
+	if (DrdyFlag == true) {
 		// 500Hz ODR => 2mS sample interval
-		drdyFlag = false;
+		DrdyFlag = false;
 		time_Update();
 		#ifdef CCT_DEBUG    
 		cct_SetMarker(); // set marker for estimating the time taken to read and process the data
 		#endif    
 		// accelerometer samples (ax,ay,az) in milli-Gs, gyroscope samples (gx,gy,gz) in degrees/second
-		imu.GetAccelGyroData(accelmG, gyroDps); 
+		Mpu9250.GetAccelGyroData(AccelmG, GyroDps); 
 
 		// We arbitrarily decide that with the power bank lying flat with the pcb on top,
 		// the CJMCU-117 board silkscreen -Y points "forward" or "north"  (the side with the HM-11), 
@@ -242,36 +242,36 @@ void vario_loop() {
 		// axned = ay, ayned = ax, azned = az (when the axis points down, axis reading must be +ve)
 		// The AHRS algorithm expects rotation rates in radians/second
 		// Acceleration data is only used for orientation correction when the acceleration magnitude is between 0.75G and 1.25G
-		float accelMagnitudeSquared = accelmG[0]*accelmG[0] + accelmG[1]*accelmG[1] + accelmG[2]*accelmG[2];
+		float accelMagnitudeSquared = AccelmG[0]*AccelmG[0] + AccelmG[1]*AccelmG[1] + AccelmG[2]*AccelmG[2];
 		int bUseAccel = ((accelMagnitudeSquared > 562500.0f) && (accelMagnitudeSquared < 1562500.0f)) ? 1 : 0;
-		float dtIMU = imuTimeDeltaUSecs/1000000.0f;
-		imu_MahonyAHRSupdate6DOF(bUseAccel, dtIMU, DEG_TO_RAD*gyroDps[0], DEG_TO_RAD*gyroDps[1], -DEG_TO_RAD*gyroDps[2], accelmG[1], accelmG[0], accelmG[2]);
-		float gravityCompensatedAccel = imu_GravityCompensatedAccel(accelmG[1], accelmG[0], accelmG[2], q0, q1, q2, q3);
+		float dtIMU = ImuTimeDeltaUSecs/1000000.0f;
+		imu_MahonyAHRSupdate6DOF(bUseAccel, dtIMU, DEG_TO_RAD*GyroDps[0], DEG_TO_RAD*GyroDps[1], -DEG_TO_RAD*GyroDps[2], AccelmG[1], AccelmG[0], AccelmG[2]);
+		float gravityCompensatedAccel = imu_GravityCompensatedAccel(AccelmG[1], AccelmG[0], AccelmG[2], Q0, Q1, Q2, Q3);
 		ringbuf_addSample(gravityCompensatedAccel);  
 
-		baroCounter++;
-		kfTimeDeltaUSecs += imuTimeDeltaUSecs;
-		if (baroCounter >= 5) { // 5*2mS = 10mS elapsed, this is the sampling period for MS5611, 
-			baroCounter = 0;    // alternating between pressure and temperature samples
+		BaroCounter++;
+		KfTimeDeltaUSecs += ImuTimeDeltaUSecs;
+		if (BaroCounter >= 5) { // 5*2mS = 10mS elapsed, this is the sampling period for MS5611, 
+			BaroCounter = 0;    // alternating between pressure and temperature samples
 			// one altitude sample is calculated for every new pair of pressure & temperature samples
-			int zMeasurementAvailable = baro.SampleStateMachine(); 
+			int zMeasurementAvailable = Ms5611.SampleStateMachine(); 
 			if ( zMeasurementAvailable ) { 
 				// average earth-z acceleration over the 20mS interval between z samples
 				// is used in the kf algorithm update phase
 				float zAccelAverage = ringbuf_averageNewestSamples(10); 
-				float dtKF = kfTimeDeltaUSecs/1000000.0f;
+				float dtKF = KfTimeDeltaUSecs/1000000.0f;
 				kalmanFilter4_predict(dtKF);
-				kalmanFilter4_update(baro.zCmSample_, zAccelAverage, (float*)&kfAltitudeCm, (float*)&kfClimbrateCps);
+				kalmanFilter4_update(Ms5611.zCmSample_, zAccelAverage, (float*)&KfAltitudeCm, (float*)&KfClimbrateCps);
 				// reset time elapsed between kalman filter algorithm updates
-				kfTimeDeltaUSecs = 0.0f;
-				audioCps =  kfClimbrateCps >= 0.0f ? (int32_t)(kfClimbrateCps+0.5f) : (int32_t)(kfClimbrateCps-0.5f);
-				vario.Beep(audioCps);                
-				if (ABS(audioCps) > SLEEP_THRESHOLD_CPS) { 
+				KfTimeDeltaUSecs = 0.0f;
+				AudioCps =  KfClimbrateCps >= 0.0f ? (int32_t)(KfClimbrateCps+0.5f) : (int32_t)(KfClimbrateCps-0.5f);
+				Vario.Beep(AudioCps);                
+				if (ABS(AudioCps) > SLEEP_THRESHOLD_CPS) { 
 					// reset sleep timeout watchdog if there is significant vertical motion
-					sleepTimeoutSecs = 0;
+					SleepTimeoutSecs = 0;
 					}
 				else
-				if (sleepTimeoutSecs >= (nvd.par.cfg.misc.sleepTimeoutMinutes*60)) {
+				if (SleepTimeoutSecs >= (Nvd.par.cfg.misc.sleepTimeoutMinutes*60)) {
 					dbg_println(("Timed out with no significant climb/sink, put MPU9250 and ESP8266 to sleep to minimize current draw"));
 					Serial.flush();
 					indicateSleep(); 
@@ -283,18 +283,18 @@ void vario_loop() {
 	#ifdef CCT_DEBUG      
 		uint32_t elapsedUs =  cct_ElapsedTimeUs(); // calculate time  taken to read and process the data, must be less than 2mS
 	#endif
-		if (drdyCounter >= 50) {
-			drdyCounter = 0; // 0.1 second elapsed
-			if (nvd.par.cfg.misc.bluetoothEnable) {
+		if (DrdyCounter >= 50) {
+			DrdyCounter = 0; // 0.1 second elapsed
+			if (Nvd.par.cfg.misc.bluetoothEnable) {
 				int adcVal = analogRead(A0);
 				float bv = adc_battery_voltage(adcVal);
-				int altM =  kfAltitudeCm > 0.0f ? (int)((kfAltitudeCm+50.0f)/100.0f) :(int)((kfAltitudeCm-50.0f)/100.0f);
-				btserial_transmitSentence(altM, audioCps, bv);
+				int altM =  KfAltitudeCm > 0.0f ? (int)((KfAltitudeCm+50.0f)/100.0f) :(int)((KfAltitudeCm-50.0f)/100.0f);
+				btserial_transmitSentence(altM, AudioCps, bv);
 				}
-			sleepCounter++;
-			if (sleepCounter >= 10) {
-				sleepCounter = 0;
-				sleepTimeoutSecs++;
+			SleepCounter++;
+			if (SleepCounter >= 10) {
+				SleepCounter = 0;
+				SleepTimeoutSecs++;
 				#ifdef IMU_DEBUG
 				float yaw, pitch, roll;
 				imu_Quaternion2YawPitchRoll(q0,q1,q2,q3, &yaw, &pitch, &roll);
@@ -303,7 +303,7 @@ void vario_loop() {
 				// Yaw is positive for clockwise rotation about the +Z axis
 				// Magnetometer isn't used, so yaw is initialized to 0 for the "forward" direction of the case on power up.
 				dbg_printf(("\r\nY = %d P = %d R = %d\r\n", (int)yaw, (int)pitch, (int)roll));
-				dbg_printf(("ba = %d ka = %d kv = %d\r\n",(int)baro.zCmSample_, (int)kfAltitudeCm, (int)kfClimbrateCps));
+				dbg_printf(("ba = %d ka = %d kv = %d\r\n",(int)Ms5611.zCmSample_, (int)KfAltitudeCm, (int)KfClimbrateCps));
 				#endif     
 				#ifdef CCT_DEBUG      
 				dbg_printf(("Elapsed %dus\r\n", (int)elapsedUs)); // ~ 700 uS, so plenty of headroom
@@ -313,7 +313,7 @@ void vario_loop() {
 		}	
 
 	if (BtnPGCCLongPress == true) {
-		appMode = APP_MODE_LANTERN;
+		AppMode = APP_MODE_LANTERN;
 		setupLantern();
 		delay(500);
 		btn_clear();    
@@ -383,7 +383,7 @@ void loop(){
 		// nothing to do here
 		}
 	else { 
-		switch (appMode) {
+		switch (AppMode) {
 			case APP_MODE_VARIO :
 			default :
 			vario_loop();
