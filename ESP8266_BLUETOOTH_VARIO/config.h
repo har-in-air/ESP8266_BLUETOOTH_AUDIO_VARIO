@@ -63,10 +63,10 @@
 // COMPILED CONFIGURATION PARAMETERS ( cannot be changed with web configuration )
 
 // change these parameters based on the frequency bandwidth of the speaker
-#define VARIO_SPKR_MIN_FREQHZ      	400
+#define VARIO_SPKR_MIN_FREQHZ      	200
 #define VARIO_SPKR_MAX_FREQHZ       3200
 
-// Two octaves (2:1) of frequency for climbrates below crossoverCps,
+// three octaves (2:1) of frequency for climbrates below crossoverCps,
 // and one octave of frequency for climbrates above crossoverCps.
 // This gives you more perceived frequency discrimination for climbrates 
 // below crossoverCps

@@ -34,20 +34,19 @@ int32_t AudioCps; // filtered climbrate, rounded to nearest cm/s
 
 // pinPGCC (GPIO0) has an external 10K pullup resistor to VCC, pressing the button 
 // will ground the pin.
-// This button has three different functions : program, configure, and calibrate
-// 1. (Pgm)Power on the unit with pgmconfcal button pressed. Or with power on, keep 
-//    pgmconfcal pressed and momentarily press the reset button.
+// This button has three different functions : program, configure, and calibrate (PGCC)
+// 1. (Program)Power on the unit with PGCC button pressed. Or with power on, keep 
+//    PGCC pressed and momentarily press the reset button.
 //    This will put the ESP8266/ESP8285 into programming mode, and you can flash 
 //    the application code from the Arduino IDE.
-// 2. (Conf)After normal power on, immediately press pgmconfcal and keep it pressed. After a 
-//    few seconds, you will hear a low tone for about 5 seconds.
-//    You can release the button as soon as you hear this tone, the unit will now
-//    be in web configuration mode. 
-// 3. (Cal)After normal power on, wait until you hear the battery voltage feedback beeps and
-//    then the countdown to gyroscope calibration. If you press the pgmconfcal button
+// 2. (WiFi Configuration)After normal power on, immediately press PGCC and keep it pressed. 
+//    Wait until you hear a low tone, then release. The unit will now be in WiFi configuration
+//    configuration mode. 
+// 3. (Calibrate)After normal power on, wait until you hear the battery voltage feedback beeps and
+//    then the countdown to gyroscope calibration. If you press the PGCC button
 //    during the gyro calibration countdown, the unit will start accelerometer calibration first. 
-//    Accelerometer calibration is only required if the accel calibration values in 
-//    flash were never written, or were corrupted.
+//    Accelerometer re-calibration is required if the acceleration calibration values in 
+//    flash were never written, or if the entire flash has been erased.
 
 volatile int DrdyCounter;
 volatile boolean DrdyFlag;
@@ -60,13 +59,13 @@ int LanternState;
 
 boolean bWebConfigure = false;
 
-MPU9250 Mpu9250;
-MS5611 Ms5611;
+MPU9250    Mpu9250;
+MS5611     Ms5611;
 VarioAudio Vario;
 
-const char* FirmwareRevision = "0.99";
+const char* FirmwareRevision = "1.00";
 
-// handles data ready interrupt from MPU9250
+// handles data ready interrupt from MPU9250 (every 2ms)
 void IRAM_ATTR drdy_interrupt_handler() {
 	DrdyFlag = true;
 	DrdyCounter++;
@@ -96,7 +95,7 @@ void setup_vario() {
 		Serial1.print("AT+NAMEEspVario");
 		}
 	Wire.begin(pinSDA, pinSCL);
-	Wire.setClock(400000); // set i2c clock frequency AFTER Wire.begin()
+	Wire.setClock(400000); // set i2c clock frequency to 400kHz, AFTER Wire.begin()
 	delay(100);
 	dbg_println(("\r\nChecking communication with MS5611"));
 	if (!Ms5611.read_prom()) {
@@ -137,7 +136,7 @@ void setup_vario() {
 	Ms5611.init_sample_state_machine(); // start the pressure & temperature sampling cycle
 
 	dbg_println(("\r\nKalmanFilter config"));
-	// initialize kalman filter with Ms5611meter estimated altitude, and climbrate = 0.0
+	// initialize kalman filter with Ms5611meter estimated altitude, estimated initial climbrate = 0.0
 	kalmanFilter4_configure((float)Nvd.par.cfg.kf.zMeasVariance, 1000.0f*(float)Nvd.par.cfg.kf.accelVariance, true, Ms5611.altitudeCmAvg, 0.0f, 0.0f);
 
 	Vario.config();  
@@ -191,8 +190,8 @@ void setup() {
 	audio_config(pinAudio); 
 
 	bWebConfigure = false;
-	dbg_println(("To start web configuration mode, press and hold the pgmconfcal button"));
-	dbg_println(("until you hear a low-frequency tone start. Then release the button"));
+	dbg_println(("To start web configuration mode, press and hold the PGCC button"));
+	dbg_println(("until you hear a low-frequency tone. Then release the button"));
 	for (int cnt = 0; cnt < 4; cnt++) {
 		dbg_println((4-cnt));
 		delay(1000);
@@ -238,8 +237,8 @@ void vario_loop() {
 		Mpu9250.get_accel_gyro_data(AccelmG, GyroDps); 
 
 		// We arbitrarily decide that with the power bank lying flat with the pcb on top,
-		// the CJMCU-117 board silkscreen -Y points "forward" or "north"  (the side with the HM-11), 
-		// silkscreen -X points "right" or "east", and silkscreen -Z points down. This is the North-East-Down (NED) 
+		// the CJMCU-117 board silkscreen Y points "forward" or "north"  (the side with the HM-11), 
+		// silkscreen X points "right" or "east", and silkscreen Z points down. This is the North-East-Down (NED) 
 		// right-handed coordinate frame used in our AHRS algorithm implementation.
 		// The required mapping from sensor samples to NED frame for our specific board orientation is : 
 		// gxned = gx, gyned = gy, gzned = -gz (clockwise rotations about the axis must result in +ve readings on the axis)
@@ -249,8 +248,14 @@ void vario_loop() {
 		float accelMagnitudeSquared = AccelmG[0]*AccelmG[0] + AccelmG[1]*AccelmG[1] + AccelmG[2]*AccelmG[2];
 		int bUseAccel = ((accelMagnitudeSquared > 562500.0f) && (accelMagnitudeSquared < 1562500.0f)) ? 1 : 0;
 		float dtIMU = ImuTimeDeltaUSecs/1000000.0f;
-		imu_mahonyAHRS_update6DOF(bUseAccel, dtIMU, DEG_TO_RAD*GyroDps[0], DEG_TO_RAD*GyroDps[1], -DEG_TO_RAD*GyroDps[2], AccelmG[1], AccelmG[0], AccelmG[2]);
-		float gCompensatedAccel = imu_gravity_compensated_accel(AccelmG[1], AccelmG[0], AccelmG[2], Q0, Q1, Q2, Q3);
+    float gxned = DEG_TO_RAD*GyroDps[0];
+    float gyned = DEG_TO_RAD*GyroDps[0];
+    float gzned = -DEG_TO_RAD*GyroDps[0];
+    float axned = AccelmG[1];
+    float ayned = AccelmG[0];
+    float azned = AccelmG[2];
+		imu_mahonyAHRS_update6DOF(bUseAccel, dtIMU, gxned, gyned, gzned, axned, ayned, azned);
+		float gCompensatedAccel = imu_gravity_compensated_accel(axned, ayned, azned, Q0, Q1, Q2, Q3);
 		ringbuf_add_sample(gCompensatedAccel);  
 
 		BaroCounter++;
@@ -307,10 +312,14 @@ void vario_loop() {
 				// Yaw is positive for clockwise rotation about the +Z axis
 				// Magnetometer isn't used, so yaw is initialized to 0 for the "forward" direction of the case on power up.
 				dbg_printf(("\r\nY = %d P = %d R = %d\r\n", (int)yaw, (int)pitch, (int)roll));
-				dbg_printf(("ba = %d ka = %d kv = %d\r\n",(int)Ms5611.zCmSample_, (int)KfAltitudeCm, (int)KfClimbrateCps));
+				dbg_printf(("ba = %d ka = %d kv = %d\r\n",(int)Ms5611.altitudeCm, (int)KfAltitudeCm, (int)KfClimbrateCps));
 				#endif     
 				#ifdef CCT_DEBUG      
-				dbg_printf(("Elapsed %dus\r\n", (int)elapsedUs)); // ~ 700 uS, so plenty of headroom
+        // The raw IMU data rate is 500Hz, i.e. 2000uS between Data Ready Interrupts
+        // We need to read the MPU9250 data, MS5611 data and finish all computations
+        // and actions well within this interval.
+        // Checked, < 620 uS @ 80MHz clock
+				dbg_printf(("Elapsed %dus\r\n", (int)elapsedUs)); 
 				#endif
 				}
 			}
