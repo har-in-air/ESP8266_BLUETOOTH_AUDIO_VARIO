@@ -7,7 +7,7 @@
 <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-<h1>ESP8266 Bluetooth Audio Vario</h1>
+<h1>%TITLE%</h1>
 <div style="text-align:center">
 <p><span>Firmware Revision : </span><span id="firmwareRevision">%FIRMWARE_REVISION%</span></p>
 <p><span>Battery Voltage : </span><span id="batteryVoltage">%BATTERY_VOLTAGE%v</span></p>
@@ -54,9 +54,7 @@
   <td>Sleep Timeout [%SLEEP_MIN% .. %SLEEP_MAX%]</td> <td><input type="number" id="sleepTimeout" name=sleepTimeout min="%SLEEP_MIN%" max="%SLEEP_MAX%" value="%SLEEP_TIMEOUT%"></td>
 </tr>
 </table>  
-  Bluetooth
-  <input type="radio" id="btoff" name=bluetooth value="btoff" %BT_OFF%><label for="btoff">Off</label>
-  <input type="radio" id="bton"  name=bluetooth value="bton"  %BT_ON%><label for="bton">On</label>
+%BLUETOOTH%
 </fieldset>
 <br>
 

@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <Ticker.h>
 #include "config.h"
-#include "board.h"
 #include "audio.h"
 #include "adc.h"
 #include "nvd.h"
@@ -182,7 +181,9 @@ void ui_calibrate_accel_gyro() {
 // ADC voltage divider.
 void ui_go_to_sleep() {
 	audio_set_frequency(0); // switch off pwm audio 
+#if (CFG_BLUETOOTH == true)    
 	digitalWrite(pinHM11Pwr, 0); // switch off bluetooth power supply
+#endif
 	Mpu9250.sleep(); // put MPU9250 in sleep mode
 	ESP.deepSleep(0); // ESP8266 in sleep can only recover with a reset/power cycle
 	}

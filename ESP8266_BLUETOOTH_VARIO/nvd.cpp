@@ -19,7 +19,9 @@ void nvd_init(void)   {
 	dbg_printf(("Calculated checkSum = 0x%04x\r\n", checkSum));	
 	dbg_printf(("Saved checkSum = ~0x%04x\r\n", ~Nvd.par.checkSum&0xFFFF));
 #endif
-	bool badData = ((Nvd.par.calib.axBias == -1) && (Nvd.par.calib.ayBias == -1) && (Nvd.par.calib.azBias == -1)) ? true : false; 
+	bool badCalibData = ((Nvd.par.calib.axBias == -1) && (Nvd.par.calib.ayBias == -1) && (Nvd.par.calib.azBias == -1)) ? true : false; 
+    bool badBluetoothData = ((Nvd.par.cfg.misc.bluetoothEnable == 0) || (Nvd.par.cfg.misc.bluetoothEnable == 1)) ? false : true;
+    bool badData = (badCalibData || badBluetoothData);
   if ((badData == false) && (checkSum ^ Nvd.par.checkSum) == 0xFFFF) {
 #ifdef NVD_DEBUG	
 	dbg_println(("NVD checkSum OK\r\n"));
@@ -43,7 +45,9 @@ void nvd_init(void)   {
         
     dbg_println(("MISCELLANEOUS"));
     dbg_printf(("sleepTimeoutMinutes = %d\r\n", Nvd.par.cfg.misc.sleepTimeoutMinutes));
+#if (CFG_BLUETOOTH == true)    
     dbg_printf(("bluetoothEnable = %d\r\n", Nvd.par.cfg.misc.bluetoothEnable));
+#endif
 #endif
 		}
    else  {
@@ -74,7 +78,9 @@ void nvd_set_defaults() {
     Nvd.par.cfg.kf.zMeasVariance = KF_ZMEAS_VARIANCE_DEFAULT;
 
     Nvd.par.cfg.misc.sleepTimeoutMinutes = SLEEP_TIMEOUT_MINUTES_DEFAULT;
+#if (CFG_BLUETOOTH == true)    
     Nvd.par.cfg.misc.bluetoothEnable = BLUETOOTH_DEFAULT;
+#endif    
 	}
 
    

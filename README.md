@@ -2,12 +2,13 @@
 
 ## Features
 * Accurate, zero-lag audio feedback variometer using Kalman filter fusion of accelerometer and pressure sensor data
-* Bluetooth transmission of LK8EX1 sentences. You can use 
-flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tablet with accurate barometric altitude and climb/sink rate data.
 * WiFi webpage configuration with the vario acting as an access point and web server.
 * WiFi Over-the-air (OTA) firmware update 
-* Optional push-pull L9110S driver with conventional loudspeakers for higher volume. 
-* Optional torch/lantern mode using a 0.5W white led. This is accessed with a long press of a button when the unit is in vario mode. Once in lantern mode, you can cycle through 3 different brightness levels and an S.O.S. flasher mode.
+* You can build a minimal audio vario with the above functionality. Or you can add optional features :
+    * Bluetooth transmission of LK8EX1 sentences with a HM-11 bluetooth module. You can then use 
+flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tablet with accurate barometric altitude and climb/sink rate data.
+    * Push-pull L9110S driver with conventional loudspeakers for higher audio volume. 
+    * Torch/lantern mode using a 0.5W white led. This is accessed with a long press of a button when the unit is in vario mode. Once in lantern mode, you can cycle through 3 different brightness levels and an S.O.S. flasher mode.
 * PCB design with same form factor as a single-cell 18650 power bank case. 
 
 ## Software Build Environment 
@@ -19,14 +20,16 @@ flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tabl
   * AsyncElegantOTA
 * [ESP8266 LittleFS Data Upload](https://github.com/earlephilhower/arduino-esp8266littlefs-plugin/releases) plugin  
 
-## Hardware 
+## Hardware
+
 * ESP-12E/12F module (4Mbytes flash)
 * CJMCU-117 10-DOF IMU module with MPU9250 and MS5611 sensors
 * HM-11 Bluetooth module
+* L9110S IC used as a push-pull driver for louder volume 
 * Kicad used for schematic and layout
-  * [Exported schematic PDF](hw/esp8266_bluetooth_vario_schematic.pdf)
-  * [PCB layout Gerber Zip](hw/esp8266_bluetooth_vario_gerber.zip)
   * [Archived Kicad project](hw/esp8266_bluetooth_vario_kicad.zip)
+  * [PCB layout Gerber Zip](hw/esp8266_bluetooth_vario_gerber.zip)
+  * [Schematic PDF](hw/esp8266_bluetooth_vario_schematic.pdf)
 
 [EasyEDA online visualization](https://gerber-viewer.easyeda.com/showcase) of PCB layout. 
 
@@ -84,21 +87,25 @@ Battery current drain is `~27mA` operating as audio vario with bluetooth disable
 
 Battery current drain is `~37mA` operating as audio vario with bluetooth LK8EX1 message transmission @ 10Hz.
 
-## Usage Notes
+## Software Build Notes
 
-* In the Arduino IDE, select `Tools->Board : 'Generic ESP8266 module'`
-  * Flash Size : `4MB (FS:1MB OTA:~1019kB)`
-  * CPU Frequency : `80MHz`
-* The first time you flash the ESP8266 with this project, select `Tools->"Erase Flash : All flash contents"`. 
-* Next, select the `Tools->ESP8266 LittleFS Data Upload` option. This will build a LittleFS partition with the contents of the `/data` directory, and then flash it to the ESP8266. 
-* Select `Tools->"Erase Flash : Only sketch"` option. From now on, use this option whether you are uploading the LittleFS partition image or the firmware binary. 
-* Build and flash the application firmware. 
+* For a minimal audio vario with the ESP8266 directly driving a piezo transducer, edit the file `config.h` and set `CFG_BLUETOOTH`, `CFG_L9110S` and `CFG_LANTERN` to false.
+If you want support for louder volume using the L9110S push-pull driver IC, set `CFG_L9110S` to true.   
+* To support bluetooth LK8EX1 transmission with a HM-11 module,set `CFG_BLUETOOTH` to true.
+* To support the torch/lantern feature, set `CFG_LANTERN` to true.
+* In the Arduino IDE, select `Tools->Board->ESP8266 Boards : Generic ESP8266 module`
+* Select `Tools->Flash Size : 4MB (FS:1MB OTA:~1019kB)`
+* Select `Tools->CPU Frequency : 80MHz`
+* The first time you flash the ESP8266 with this project code, select `Tools->Erase Flash : All flash contents`. 
+* Next, select the `Tools->ESP8266 LittleFS Data Upload` option. This will build a LittleFS flash partition with the contents of the `/data` directory, and then flash it to the ESP8266. The `/data` directory contains the static HTML and CSS files for the WiFi server webpage.
+* Next, select `Tools->Erase Flash : Only sketch` option. From now on, use this option whether you are uploading the LittleFS partition image or the firmware binary. 
+* Now, build and flash the application firmware. 
 * Ensure the serial debug monitor is visible, then reset or power-cycle the EP8266 module. Since there is no calibration data, you will see a calibration error message. Follow the prompts to calibrate both accelerometer and gyroscope.
 [This is a startup serial monitor log after a full flash erase.](docs/calibration_log.txt). 
 * The gyroscope is re-calibrated each time on power-up. You should leave the vario undisturbed when you hear the count-down beeps for gyroscope calibration. If the vario is disturbed during the gyro calibration process, it will use the last saved gyro calibration parameters.
 * [This is a startup serial monitor log of the vario with calibrated accelerometer.](docs/boot_log.txt). 
 * This project uses the KF4D kalman filter algorithm from the [ESP32_IMU_GPS_BARO_VARIO](https://github.com/har-in-air/ESP32_IMU_BARO_GPS_VARIO) project.
-* To put the vario into WiFi configuration mode, switch on the vario and press the `PGCC` button. Keep it pressed until you hear a confirmation tone, then release. You can now connect to the WiFi Access Point `"ESP8266Vario"` (no password needed). Now, access the url `http://192.168.4.1` in a browser.
+* To put the vario into WiFi configuration mode, switch on the vario and immediately press the `PGCC` button. Keep it pressed until you hear a confirmation tone, then release. You can now connect to the WiFi Access Point `ESP8266Vario` - no password needed. Now, access the url `http://192.168.4.1` in a browser.
 <img src="docs/wifi_config_webpage.png">
 * To update the firmware, access the url `http://192.168.4.1/update`. 
 Upload the new firmware binary `.bin` file. Reboot the vario. Select WiFi configuration mode again, and confirm the firmware revision string has changed (assuming it has been updated along with code changes).<br>

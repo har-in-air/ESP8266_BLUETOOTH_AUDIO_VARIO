@@ -1,6 +1,34 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+// define as true if you want the associated feature support in the  code. 
+// Note : with bluetooth feature support you can still enable or disable bluetooth
+// transmission via the WiFi configuration webpage.
+
+#define CFG_BLUETOOTH   true
+#define CFG_L9110S      true
+#define CFG_LANTERN     false
+
+////////////////////////////////////////////////////////////////////////
+
+#define pinPGCC      0
+#define pinSDA       5
+#define pinSCL       4
+#define pinDRDYInt   15
+#define pinAudio 	 14
+
+#if (CFG_BLUETOOTH == true)
+    #define pinHM11Pwr   13
+#endif
+#if (CFG_L9110S == true)
+    #define pinL9110Pwr  16
+#endif
+#if (CFG_LANTERN == true)
+    #define pinLED       12
+#endif
+
+#define BTN_PGCC()  (GPIP(pinPGCC) ? 1 : 0)
+
 #define APP_MODE_VARIO   11
 #define APP_MODE_LANTERN 22
 
@@ -89,10 +117,14 @@
 // until you find that gyro calibration works consistently.
 #define GYRO_OFFSET_LIMIT_1000DPS   	50
 
+// pwm settings for lantern brightness
+#define LANTERN_DIM   20
+#define LANTERN_LOW   50
+#define LANTERN_MID   200
+#define LANTERN_HI   1023
+
 // print debug information to the serial port for different code modules
 
-// these #defines can be left uncommented after debugging, as the enclosed
-// debug prints do not appear in the critical run-time loop
 #define TOP_DEBUG
 #ifdef TOP_DEBUG
 	#define dbg_println(x) {Serial.println x;}
@@ -101,6 +133,8 @@
 	#define dbg_println(x)
 	#define dbg_printf(x)
 #endif
+// these #defines can be left uncommented after debugging, as the enclosed
+// debug prints do not appear in the critical run-time loop
 #define KF_DEBUG
 #define VARIO_DEBUG
 #define NVD_DEBUG
@@ -113,9 +147,5 @@
 //#define IMU_DEBUG
 //#define CCT_DEBUG
 
-#define LANTERN_DIM   20
-#define LANTERN_LOW   50
-#define LANTERN_MID   200
-#define LANTERN_HI   1023
 
 #endif

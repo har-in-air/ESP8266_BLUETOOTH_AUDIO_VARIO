@@ -1,7 +1,13 @@
 #ifndef NVD_H_
 #define NVD_H_
 
-#define NVD_SIZE_BYTES 30
+#include "config.h"
+
+#if (CFG_BLUETOOTH == true)    
+    #define NVD_SIZE_BYTES 30
+#else
+    #define NVD_SIZE_BYTES 28
+#endif
 
 typedef struct CALIB_PARAMS_ {
 	int16_t  axBias;
@@ -26,7 +32,9 @@ typedef struct KALMAN_FILTER_PARAMS_ {
 
 typedef struct MISC_PARAMS_ {
 	int16_t  sleepTimeoutMinutes;
+#if (CFG_BLUETOOTH == true)    
 	int16_t  bluetoothEnable;
+#endif
 	} MISC_PARAMS;
 
 typedef struct CONFIG_PARAMS_ {

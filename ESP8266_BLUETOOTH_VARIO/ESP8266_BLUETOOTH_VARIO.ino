@@ -3,7 +3,6 @@
 #include <FS.h>
 #include <LittleFS.h>
 #include "config.h"
-#include "board.h"
 #include "util.h"
 #include "imu.h"
 #include "mpu9250.h"
@@ -17,7 +16,9 @@
 #include "ringbuf.h"
 #include "wificfg.h"
 #include "ui.h"
+#if (CFG_BLUETOOTH == true)
 #include "btserial.h"
+#endif
 
 int      AppMode;
 
@@ -32,17 +33,20 @@ float KfAltitudeCm = 0.0f;
 float KfClimbrateCps  = 0.0f; // filtered climbrate in cm/s
 int32_t AudioCps; // filtered climbrate, rounded to nearest cm/s
 
-// pinPGCC (GPIO0) has an external 10K pullup resistor to VCC, pressing the button 
-// will ground the pin.
+// pinPGCC (GPIO9) has an external 10K pullup resistor to VCC
+// pressing the button  will ground the pin.
 // This button has three different functions : program, configure, and calibrate (PGCC)
-// 1. (Program)Power on the unit with PGCC button pressed. Or with power on, keep 
+// 1. (Program)
+//    Power on the unit with PGCC button pressed. Or with power on, keep 
 //    PGCC pressed and momentarily press the reset button.
-//    This will put the ESP8266/ESP8285 into programming mode, and you can flash 
+//    This will put the ESP8266 into programming mode, and you can flash 
 //    the application code from the Arduino IDE.
-// 2. (WiFi Configuration)After normal power on, immediately press PGCC and keep it pressed. 
+// 2. (WiFi Configuration)
+//    After normal power on, immediately press PGCC and keep it pressed. 
 //    Wait until you hear a low tone, then release. The unit will now be in WiFi configuration
 //    configuration mode. 
-// 3. (Calibrate)After normal power on, wait until you hear the battery voltage feedback beeps and
+// 3. (Calibrate)
+//    After normal power on, wait until you hear the battery voltage feedback beeps and
 //    then the countdown to gyroscope calibration. If you press the PGCC button
 //    during the gyro calibration countdown, the unit will start accelerometer calibration first. 
 //    Accelerometer re-calibration is required if the acceleration calibration values in 
@@ -54,8 +58,10 @@ volatile int SleepCounter;
 volatile int BaroCounter;
 volatile int SleepTimeoutSecs;
 
+#if (CFG_LANTERN == true)
 int LEDPwmLkp[4] = {LANTERN_DIM, LANTERN_LOW, LANTERN_MID, LANTERN_HI};
 int LanternState;
+#endif
 
 boolean bWebConfigure = false;
 
@@ -63,7 +69,7 @@ MPU9250    Mpu9250;
 MS5611     Ms5611;
 VarioAudio Vario;
 
-const char* FirmwareRevision = "1.00";
+const char* FirmwareRevision = "1.10";
 
 // handles data ready interrupt from MPU9250 (every 2ms)
 void IRAM_ATTR drdy_interrupt_handler() {
@@ -85,16 +91,7 @@ inline void time_update(){
 
 void setup_vario() {
 	dbg_println(("Vario mode"));
-	if (Nvd.par.cfg.misc.bluetoothEnable) {
-		dbg_println(("Enabling Bluetooth"));
-		digitalWrite(pinHM11Pwr, 1);
-		delay(300);
-		Serial1.begin(9600);
-		delay(20);
-		// bluetooth device name = "EspVario"
-		Serial1.print("AT+NAMEEspVario");
-		}
-	Wire.begin(pinSDA, pinSCL);
+ 	Wire.begin(pinSDA, pinSCL);
 	Wire.setClock(400000); // set i2c clock frequency to 400kHz, AFTER Wire.begin()
 	delay(100);
 	dbg_println(("\r\nChecking communication with MS5611"));
@@ -146,31 +143,46 @@ void setup_vario() {
 	SleepTimeoutSecs = 0;
 	ringbuf_init(); 
 	SleepCounter = 0;
-	if (Nvd.par.cfg.misc.bluetoothEnable ){
+#if (CFG_BLUETOOTH == true)    
+	if (Nvd.par.cfg.misc.bluetoothEnable == 1){
 		dbg_println(("\r\nStarting Vario with bluetooth LK8EX1 messages @ 10Hz\r\n"));
 		}
 	else {
 		dbg_println(("\r\nStarting Vario with bluetooth disabled\r\n"));  
 		}
+#else 
+	dbg_println(("\r\nStarting Vario\r\n"));  
+#endif
 	}
 
-   
+#if (CFG_LANTERN == true)   
 void setup_lantern() {
-   dbg_println(("Lantern mode"));
-   LanternState = 0;
-   analogWrite(pinLED, LEDPwmLkp[LanternState]);
-   }
-
-
-void setup() {
-	pinMode(pinLED, OUTPUT);
+    pinMode(pinLED, OUTPUT);
 	digitalWrite(pinLED, 0); // LED off
+    dbg_println(("Lantern mode"));
+    LanternState = 0;
+    analogWrite(pinLED, LEDPwmLkp[LanternState]);
+    }
+#endif
+
+#if (CFG_BLUETOOTH == true)   
+void config_bluetooth() {
 	pinMode(pinHM11Pwr, OUTPUT); // enable/disable power to HM-11 Bluetooth module
 	digitalWrite(pinHM11Pwr, 0);  // disable
-	pinMode(pinL9110Pwr, OUTPUT); // enable/disable power to L9110 push-pull driver
-	digitalWrite(pinL9110Pwr, 0); // disable
-	pinMode(pinPGCC, INPUT); //  Program/Configure/Calibrate Button
+	if (Nvd.par.cfg.misc.bluetoothEnable) {
+		dbg_println(("Enabling Bluetooth"));
+		digitalWrite(pinHM11Pwr, 1);
+		delay(300);
+		Serial1.begin(9600);
+		delay(20);
+		// bluetooth device name = "EspVario"
+		Serial1.print("AT+NAMEEspVario");
+		}
+   }
+#endif        
 
+void setup() {
+	pinMode(pinPGCC, INPUT); //  Program/Configure/Calibrate Button
 	wificfg_wifi_off(); // turn off radio to save power
 
 #ifdef TOP_DEBUG    
@@ -210,15 +222,19 @@ void setup() {
 		}
   	else {
     	ui_indicate_battery_voltage();
+#if (CFG_BLUETOOTH == true)   
+        config_bluetooth();
+#endif        
     	switch (AppMode) {
 			case APP_MODE_VARIO :
 			default :
 			setup_vario();
 			break;
-
+#if (CFG_LANTERN == true)
 			case APP_MODE_LANTERN :
 			setup_lantern();
 			break;
+#endif            
 			}
 		}
 	ui_btn_init();	
@@ -231,7 +247,7 @@ void vario_loop() {
 		DrdyFlag = false;
 		time_update();
 		#ifdef CCT_DEBUG    
-		cct_set_marker(); // set marker for estimating the time taken to read and process the data
+		cct_set_marker(); // set marker for estimating the time taken to read and process the data (needs to be < 2mS !!)
 		#endif    
 		// accelerometer samples (ax,ay,az) in milli-Gs, gyroscope samples (gx,gy,gz) in degrees/second
 		Mpu9250.get_accel_gyro_data(AccelmG, GyroDps); 
@@ -247,13 +263,13 @@ void vario_loop() {
 		// Acceleration data is only used for orientation correction when the acceleration magnitude is between 0.75G and 1.25G
 		float accelMagnitudeSquared = AccelmG[0]*AccelmG[0] + AccelmG[1]*AccelmG[1] + AccelmG[2]*AccelmG[2];
 		int bUseAccel = ((accelMagnitudeSquared > 562500.0f) && (accelMagnitudeSquared < 1562500.0f)) ? 1 : 0;
-		float dtIMU = ImuTimeDeltaUSecs/1000000.0f;
-    float gxned = DEG_TO_RAD*GyroDps[0];
-    float gyned = DEG_TO_RAD*GyroDps[0];
-    float gzned = -DEG_TO_RAD*GyroDps[0];
-    float axned = AccelmG[1];
-    float ayned = AccelmG[0];
-    float azned = AccelmG[2];
+        float dtIMU = ImuTimeDeltaUSecs/1000000.0f;
+        float gxned = DEG_TO_RAD*GyroDps[0];
+        float gyned = DEG_TO_RAD*GyroDps[0];
+        float gzned = -DEG_TO_RAD*GyroDps[0];
+        float axned = AccelmG[1];
+        float ayned = AccelmG[0];
+        float azned = AccelmG[2];
 		imu_mahonyAHRS_update6DOF(bUseAccel, dtIMU, gxned, gyned, gzned, axned, ayned, azned);
 		float gCompensatedAccel = imu_gravity_compensated_accel(axned, ayned, azned, Q0, Q1, Q2, Q3);
 		ringbuf_add_sample(gCompensatedAccel);  
@@ -294,12 +310,14 @@ void vario_loop() {
 	#endif
 		if (DrdyCounter >= 50) {
 			DrdyCounter = 0; // 0.1 second elapsed
-			if (Nvd.par.cfg.misc.bluetoothEnable) {
+#if (CFG_BLUETOOTH == true)
+			if (Nvd.par.cfg.misc.bluetoothEnable == 1) {
 				int adcVal = analogRead(A0);
 				float bv = adc_battery_voltage(adcVal);
 				int altM =  KfAltitudeCm > 0.0f ? (int)((KfAltitudeCm+50.0f)/100.0f) :(int)((KfAltitudeCm-50.0f)/100.0f);
 				btserial_transmit_LK8EX1(altM, AudioCps, bv);
 				}
+#endif
 			SleepCounter++;
 			if (SleepCounter >= 10) {
 				SleepCounter = 0;
@@ -315,25 +333,26 @@ void vario_loop() {
 				dbg_printf(("ba = %d ka = %d kv = %d\r\n",(int)Ms5611.altitudeCm, (int)KfAltitudeCm, (int)KfClimbrateCps));
 				#endif     
 				#ifdef CCT_DEBUG      
-        // The raw IMU data rate is 500Hz, i.e. 2000uS between Data Ready Interrupts
-        // We need to read the MPU9250 data, MS5611 data and finish all computations
-        // and actions well within this interval.
-        // Checked, < 620 uS @ 80MHz clock
+                // The raw IMU data rate is 500Hz, i.e. 2000uS between Data Ready Interrupts
+                // We need to read the MPU9250 data, MS5611 data and finish all computations
+                // and actions well within this interval.
+                // Checked, < 620 uS @ 80MHz clock
 				dbg_printf(("Elapsed %dus\r\n", (int)elapsedUs)); 
 				#endif
 				}
 			}
 		}	
-
+#if (CFG_LANTERN == true)
 	if (BtnPGCCLongPress == true) {
 		AppMode = APP_MODE_LANTERN;
 		setup_lantern();
 		delay(500);
 		ui_btn_clear();    
 		}  
+#endif        
 	}
 
-
+#if (CFG_LANTERN == true)
 void lantern_loop() {
 	int count;
 	if (BtnPGCCPressed) {
@@ -389,7 +408,8 @@ void lantern_loop() {
 			}    
 		}
 	}
-  
+#endif
+
 
 void loop(){
 	if (bWebConfigure == true) {
@@ -402,9 +422,11 @@ void loop(){
 			vario_loop();
 			break;
 
+#if (CFG_LANTERN == true)
 			case APP_MODE_LANTERN :
 			lantern_loop();
 			break;      
+#endif            
 			}
 		} 
 	}
