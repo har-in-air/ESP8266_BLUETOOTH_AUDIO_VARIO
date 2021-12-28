@@ -8,7 +8,7 @@
 #include "mpu9250.h"
 #include "ms5611.h"
 #include "kalmanfilter4.h"
-#include "varioaudio.h"
+#include "vario_audio.h"
 #include "cct.h"
 #include "adc.h"
 #include "nvd.h"
@@ -67,7 +67,6 @@ boolean bWebConfigure = false;
 
 MPU9250    Mpu9250;
 MS5611     Ms5611;
-VarioAudio Vario;
 
 const char* FirmwareRevision = "1.10";
 
@@ -136,7 +135,7 @@ void setup_vario() {
 	// initialize kalman filter with Ms5611meter estimated altitude, estimated initial climbrate = 0.0
 	kalmanFilter4_configure((float)Nvd.par.cfg.kf.zMeasVariance, 1000.0f*(float)Nvd.par.cfg.kf.accelVariance, true, Ms5611.altitudeCmAvg, 0.0f, 0.0f);
 
-	Vario.config();  
+	vaudio_config();  
 	time_init();
 	KfTimeDeltaUSecs = 0.0f;
 	BaroCounter = 0;
@@ -290,7 +289,7 @@ void vario_loop() {
 				// reset time elapsed between kalman filter algorithm updates
 				KfTimeDeltaUSecs = 0.0f;
 				AudioCps =  KfClimbrateCps >= 0.0f ? (int32_t)(KfClimbrateCps+0.5f) : (int32_t)(KfClimbrateCps-0.5f);
-				Vario.beep(AudioCps);                
+				vaudio_tick_handler(AudioCps);                
 				if (ABS(AudioCps) > SLEEP_THRESHOLD_CPS) { 
 					// reset sleep timeout watchdog if there is significant vertical motion
 					SleepTimeoutSecs = 0;
