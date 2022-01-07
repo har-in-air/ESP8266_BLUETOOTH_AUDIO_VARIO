@@ -14,11 +14,19 @@ flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tabl
 ## Software Build Environment 
 * Ubuntu 20.04 LTS AMDx64
 * Arduino IDE version 1.8.16
+<<<<<<< HEAD
 * External Arduino libraries used - install these using Arduino Library Manager : 
   * ESPAsyncTCP
   * ESPAsyncWebServer
   * AsyncElegantOTA
 * [Arduino ESP8266 LittleFS Data Upload plugin](https://github.com/earlephilhower/arduino-esp8266littlefs-plugin/releases) plugin  
+=======
+* External Arduino libraries used (install using Arduino Library Manager) : 
+  * ESPAsyncTCP
+  * ESPAsyncWebServer
+  * AsyncElegantOTA
+* [Arduino ESP8266 LittleFS Data Upload plugin](https://github.com/earlephilhower/arduino-esp8266littlefs-plugin/releases)
+>>>>>>> tmp
 
 ## Hardware
 

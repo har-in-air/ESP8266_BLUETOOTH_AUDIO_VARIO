@@ -5,6 +5,7 @@
 #include <AsyncElegantOTA.h>
 #include <FS.h>
 #include <LittleFS.h>
+#include <ESP8266mDNS.h>
 #include "config.h"
 #include "nvd.h"
 #include "adc.h"
@@ -133,7 +134,7 @@ static String server_string_processor(const String& var){
     else
     if(var == "BLUETOOTH"){
 #if (CFG_BLUETOOTH == true)    
-        String szhtml = "Bluetooth <input type=\"radio\" id=\"btoff\" name=bluetooth value=\"btoff\" ";
+        String szhtml = "Bluetooth LK8EX1 @10Hz <input type=\"radio\" id=\"btoff\" name=bluetooth value=\"btoff\" ";
         szhtml += Nvd.par.cfg.misc.bluetoothEnable == 0 ? "checked" : "";
         szhtml += "><label for=\"btoff\">Off</label>";
         szhtml += "<input type=\"radio\" id=\"bton\" name=bluetooth value=\"bton\" ";
@@ -201,6 +202,9 @@ void wificfg_ap_server_init() {
     // Print ESP8266 Local IP Address
     dbg_println((WiFi.localIP()));
 #endif
+    if (MDNS.begin("esp8266")) {
+    	Serial.println("MDNS started, connect to http://esp8266.local");
+    	}
     pServer = new AsyncWebServer(80);
     pServer->onNotFound(server_not_found);
     // Send web page with input fields to client
