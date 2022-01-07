@@ -128,7 +128,7 @@ button {
 
 input[type="number"] {
 	clear: both;
-	float: right;
+	float: left;
 	width: 100px;
 	}
 

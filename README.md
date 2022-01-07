@@ -14,11 +14,11 @@ flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tabl
 ## Software Build Environment 
 * Ubuntu 20.04 LTS AMDx64
 * Arduino IDE version 1.8.16
-* Arduino libraries used : 
+* External Arduino libraries used (install using Arduino Library Manager) : 
   * ESPAsyncTCP
   * ESPAsyncWebServer
   * AsyncElegantOTA
-* [ESP8266 LittleFS Data Upload](https://github.com/earlephilhower/arduino-esp8266littlefs-plugin/releases) plugin  
+* [Arduino ESP8266 LittleFS Data Upload plugin](https://github.com/earlephilhower/arduino-esp8266littlefs-plugin/releases)
 
 ## Hardware
 
@@ -106,8 +106,10 @@ If you want support for louder volume using the L9110S push-pull driver IC, set 
 * [This is a startup serial monitor log of the vario with calibrated accelerometer.](docs/boot_log.txt). 
 * This project uses the KF4D kalman filter algorithm from the [ESP32_IMU_GPS_BARO_VARIO](https://github.com/har-in-air/ESP32_IMU_BARO_GPS_VARIO) project.
 * To put the vario into WiFi configuration mode, switch on the vario and immediately press the `PGCC` button. Keep it pressed until you hear a confirmation tone, then release. You can now connect to the WiFi Access Point `ESP8266Vario` - no password needed. Now, access the url `http://192.168.4.1` in a browser.
+<br>
 <img src="docs/wifi_config_webpage.png">
 * To update the firmware, access the url `http://192.168.4.1/update`. 
 Upload the new firmware binary `.bin` file. Reboot the vario. Select WiFi configuration mode again, and confirm the firmware revision string has changed (assuming it has been updated along with code changes).<br>
-Note : To export the compiled firmware binary file to the sketch folder, use the `Sketch->Export compiled binary` command. 
+Note : To export the compiled firmware binary file to the sketch folder, use the `Sketch->Export compiled binary` command.
+<br> 
 <img src="docs/firmware_update.png">
