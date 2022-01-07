@@ -8,7 +8,7 @@
 #include "mpu9250.h"
 #include "ms5611.h"
 #include "kalmanfilter4.h"
-#include "vario_audio.h"
+#include "varioaudio.h"
 #include "cct.h"
 #include "adc.h"
 #include "nvd.h"
