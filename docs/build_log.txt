@@ -2,10 +2,38 @@
  Select Flash -> Erase Flash (All Contents)
  -------------------------------------------------------------
  
-
+--------------------------------------------------------------
+ Select Tools -> Flash Size: "1MB (FS:none OTA:~502KB)"
 -------------------------------------------------------------
+-------------------------------------------------------------------------------
 Build and Upload (completely erase ESP8266 flash and flash application firmware)
+-------------------------------------------------------------------------------
+
+... output doesn't matter ...
+
+
+--------------------------------------------------------------
+ Select Tools -> Flash Size: "4MB (FS:1MB OTA:~1019KB)"
 -------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+Build and Upload (completely erase ESP8266 flash and flash application firmware)
+-------------------------------------------------------------------------------
+
+In file included from /home/hari/Arduino/ESP8266/ESP8266_BLUETOOTH_AUDIO_VARIO/ESP8266_BLUETOOTH_VARIO/wificfg.cpp:5:
+/home/hari/Arduino/libraries/AsyncElegantOTA/src/AsyncElegantOTA.h:4:2: warning: #warning AsyncElegantOTA.loop(); is deprecated, please remove it from loop() if defined. This function will be removed in a future release. [-Wcpp]
+    4 | #warning AsyncElegantOTA.loop(); is deprecated, please remove it from loop() if defined. This function will be removed in a future release.
+      |  ^~~~~~~
+In file included from /home/hari/Arduino/libraries/ESPAsyncWebServer/src/SPIFFSEditor.cpp:1:
+/home/hari/Arduino/libraries/ESPAsyncWebServer/src/SPIFFSEditor.h:16:101: warning: 'SPIFFS' is deprecated: SPIFFS has been deprecated. Please consider moving to LittleFS or other filesystems. [-Wdeprecated-declarations]
+   16 |     SPIFFSEditor(const String& username=String(), const String& password=String(), const fs::FS& fs=SPIFFS);
+      |                                                                                                     ^~~~~~
+In file included from /home/hari/Arduino/libraries/ESPAsyncWebServer/src/ESPAsyncWebServer.h:27,
+                 from /home/hari/Arduino/libraries/ESPAsyncWebServer/src/SPIFFSEditor.h:3,
+                 from /home/hari/Arduino/libraries/ESPAsyncWebServer/src/SPIFFSEditor.cpp:1:
+/home/hari/.arduino15/packages/esp8266/hardware/esp8266/3.0.2/cores/esp8266/FS.h:275:15: note: declared here
+  275 | extern fs::FS SPIFFS __attribute__((deprecated("SPIFFS has been deprecated. Please consider moving to LittleFS or other filesystems.")));
+      |               ^~~~~~
 Executable segment sizes:
 ICACHE : 32768           - flash instruction cache 
 IROM   : 401424          - code in flash         (default or ICACHE_FLASH_ATTR) 
@@ -30,7 +58,7 @@ Changed.
 Configuring flash size...
 Auto-detected Flash size: 4MB
 Erasing flash (this may take a while)...
-Chip erase completed successfully in 7.4s
+Chip erase completed successfully in 7.3s
 Compressed 443392 bytes to 332659...
 Writing at 0x00000000... (4 %)
 Writing at 0x00004000... (9 %)
@@ -53,14 +81,11 @@ Writing at 0x00044000... (85 %)
 Writing at 0x00048000... (90 %)
 Writing at 0x0004c000... (95 %)
 Writing at 0x00050000... (100 %)
-Wrote 443392 bytes (332659 compressed) at 0x00000000 in 7.5 seconds (effective 472.2 kbit/s)...
+Wrote 443392 bytes (332659 compressed) at 0x00000000 in 7.5 seconds (effective 473.2 kbit/s)...
 Hash of data verified.
 
 Leaving...
 Hard resetting via RTS pin...
-
-
-
 ------------------------------------------
  Select Flash -> Erase Flash (Sketch Only)
 ------------------------------------------
@@ -69,13 +94,14 @@ Hard resetting via RTS pin...
  Select Tools -> ESP8266 LittleFS Data Upload
  to build the LittleFS partition from /data contents and flash it.
 -------------------------------------------------------------- 
+
 [LittleFS] data    : /home/hari/Arduino/ESP8266/ESP8266_BLUETOOTH_AUDIO_VARIO/ESP8266_BLUETOOTH_VARIO/data
 [LittleFS] size    : 1000
 [LittleFS] page    : 256
 [LittleFS] block   : 8192
 /style.css
 /index.html
-[LittleFS] upload  : /tmp/arduino_build_417258/ESP8266_BLUETOOTH_VARIO.mklittlefs.bin
+[LittleFS] upload  : /tmp/arduino_build_39727/ESP8266_BLUETOOTH_VARIO.mklittlefs.bin
 [LittleFS] address : 0x300000
 [LittleFS] reset   : --before default_reset --after hard_reset
 [LittleFS] port    : /dev/ttyUSB0
@@ -97,9 +123,9 @@ Changing baud rate to 460800
 Changed.
 Configuring flash size...
 Auto-detected Flash size: 4MB
-Compressed 1024000 bytes to 3022...
+Compressed 1024000 bytes to 3021...
 Writing at 0x00300000... (100 %)
-Wrote 1024000 bytes (3022 compressed) at 0x00300000 in 0.1 seconds (effective 102371.7 kbit/s)...
+Wrote 1024000 bytes (3021 compressed) at 0x00300000 in 0.1 seconds (effective 102373.6 kbit/s)...
 Hash of data verified.
 
 Leaving...
@@ -110,32 +136,15 @@ Hard resetting via RTS pin...
  Press reset for first boot
 ---------------------------- 
 
-ESP8266 BLUETOOTH VARIO compiled on Jan  8 2022 at 11:19:51
+
+ESP8266 BLUETOOTH VARIO compiled on Jan  8 2022 at 13:16:02
 Firmware Revision 1.21
 
 Checking non-volatile data (calibration and configuration)
 Sizeof(NVD_PARAMS) = 28 bytes
-Calculated checkSum = 0xc202
-Saved checkSum = ~0xc202
-NVD checkSum OK
-
-ACCEL & GYRO Calibration Values
-axBias = 0
-ayBias = 0
-azBias = 0
-gxBias = 0
-gyBias = 0
-gzBias = 0
-VARIO
-climbThresholdCps = 50
-zeroThresholdCps = 5
-sinkThresholdCps = -250
-crossoverCps = 400
-KALMAN FILTER
-accelVariance = 100
-zMeasVariance = 200
-MISCELLANEOUS
-sleepTimeoutMinutes = 15
+Calculated checkSum = 0x1d84
+Saved checkSum = ~0x0000
+ERROR!! NVD BAD CHECKSUM, SETTING DEFAULTS
 To start web configuration mode, press and hold the PCC button
 until you hear a low-frequency tone. Then release the button
 4
@@ -143,7 +152,7 @@ until you hear a low-frequency tone. Then release the button
 2
 1
 
-Battery voltage = 4.05V
+Battery voltage = 4.02V
 Vario mode
 
 Checking communication with MS5611
@@ -213,10 +222,10 @@ You have 10 seconds, counted down with rapid beeps from 50 to 0
 1
 
 Calibrating accelerometer
-ax = -78  ay = -158  az = 8300
-axBias = -78
-ayBias = -158
-azBias = 108
+ax = -4  ay = -159  az = 8291
+axBias = -4
+ayBias = -159
+azBias = 99
 Accelerometer calibration done
 Counting down to gyro calibration
 Press the PCC button to enforce accelerometer calibration first
@@ -233,16 +242,16 @@ Press the PCC button to enforce accelerometer calibration first
 
 Calibrating gyro
 Num Tries = 1
-gxBias = 23
-gyBias = -9
-gzBias = 22
+gxBias = 22
+gyBias = -10
+gzBias = 23
 Gyro calibration OK
 
 MS5611 config
 MS5611 Calibration Coeffs : 48939 50595 29263 26380 30963 26826
-Tavg : 30C
-Pavg : 91596Pa
-Zavg : 84323cm
+Tavg : 29C
+Pavg : 91410Pa
+Zavg : 86013cm
 
 KalmanFilter config
 climbToneCps = 50
@@ -256,22 +265,22 @@ Starting Vario
 Press reset again (normal, accelerometer calibrated boot)
 -----------------------------------------------------------
 
-ESP8266 BLUETOOTH VARIO compiled on Jan  8 2022 at 11:19:51
+ESP8266 BLUETOOTH VARIO compiled on Jan  8 2022 at 13:16:02
 Firmware Revision 1.21
 
 Checking non-volatile data (calibration and configuration)
 Sizeof(NVD_PARAMS) = 28 bytes
-Calculated checkSum = 0xbe5b
-Saved checkSum = ~0xbe5b
+Calculated checkSum = 0x0569
+Saved checkSum = ~0x0569
 NVD checkSum OK
 
 ACCEL & GYRO Calibration Values
-axBias = -78
-ayBias = -158
-azBias = 108
-gxBias = 23
-gyBias = -9
-gzBias = 22
+axBias = -4
+ayBias = -159
+azBias = 99
+gxBias = 22
+gyBias = -10
+gzBias = 23
 VARIO
 climbThresholdCps = 50
 zeroThresholdCps = 5
@@ -289,7 +298,7 @@ until you hear a low-frequency tone. Then release the button
 2
 1
 
-Battery voltage = 4.05V
+Battery voltage = 4.02V
 Vario mode
 
 Checking communication with MS5611
@@ -300,8 +309,8 @@ MS5611 OK
 Checking communication with MPU9250
 MPU9250 OK
 Calibration parameters from NVD
-Accel : axBias -78, ayBias -158, azBias 108
-Gyro : gxBias 23, gyBias -9, gzBias 22
+Accel : axBias -4, ayBias -159, azBias 99
+Gyro : gxBias 22, gyBias -10, gzBias 23
 Counting down to gyro calibration
 Press the PCC button to enforce accelerometer calibration first
 10
@@ -317,16 +326,16 @@ Press the PCC button to enforce accelerometer calibration first
 
 Calibrating gyro
 Num Tries = 1
-gxBias = 21
-gyBias = -10
-gzBias = 23
+gxBias = 23
+gyBias = -11
+gzBias = 22
 Gyro calibration OK
 
 MS5611 config
 MS5611 Calibration Coeffs : 48939 50595 29263 26380 30963 26826
 Tavg : 29C
-Pavg : 91594Pa
-Zavg : 84339cm
+Pavg : 91405Pa
+Zavg : 86060cm
 
 KalmanFilter config
 climbToneCps = 50
@@ -335,6 +344,7 @@ sinkToneCps = -250
 crossoverCps = 400
 
 Starting Vario
+
 
 
 
