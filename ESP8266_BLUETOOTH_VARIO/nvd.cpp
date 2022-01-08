@@ -8,6 +8,41 @@
 
 NVD Nvd;
 
+// crc16  :  https://www.embeddedrelated.com/showcode/295.php
+#define CRC16_DNP	0x3D65		// DNP, IEC 870, M-BUS, wM-BUS, ...
+#define CRC16_CCITT	0x1021		// X.25, V.41, HDLC FCS, Bluetooth, ...
+#define POLYNOM		CRC16_DNP
+
+static uint16_t crc16(uint16_t crcValue, uint8_t newByte);
+static uint16_t nvd_checksum(void);
+static void nvd_commit(void);
+
+static uint16_t crc16(uint16_t crcValue, uint8_t newByte) {
+	for (int bitIndex = 0; bitIndex < 8; bitIndex++) {
+		if (((crcValue & 0x8000) >> 8) ^ (newByte & 0x80)){
+			crcValue = (crcValue << 1)  ^ POLYNOM;
+			}
+		else{
+			crcValue = (crcValue << 1);
+			}
+		newByte <<= 1;
+		}
+	return crcValue;
+	}
+
+
+static uint16_t nvd_checksum(void){
+	//uint16_t crc = 0xFFFF; // CCITT
+	uint16_t crc = 0x0000; // DNP
+	int nBytes = sizeof(NVD_PARAMS)-2;
+	for (int inx = 0; inx < nBytes; inx++) {
+		crc = crc16(crc, Nvd.buf[inx]); 
+		}
+	//return crc; // CCITT
+	return (~crc); // DNP
+	}
+
+
 void nvd_init(void)   {
 	EEPROM.begin(NVD_SIZE_BYTES);
 	for (int inx = 0; inx < NVD_SIZE_BYTES; inx++) {
@@ -20,8 +55,13 @@ void nvd_init(void)   {
 	dbg_printf(("Saved checkSum = ~0x%04x\r\n", ~Nvd.par.checkSum&0xFFFF));
 #endif
 	bool badCalibData = ((Nvd.par.calib.axBias == -1) && (Nvd.par.calib.ayBias == -1) && (Nvd.par.calib.azBias == -1)) ? true : false; 
+#if (CFG_BLUETOOTH == true)    
     bool badBluetoothData = ((Nvd.par.cfg.misc.bluetoothEnable == 0) || (Nvd.par.cfg.misc.bluetoothEnable == 1)) ? false : true;
     bool badData = (badCalibData || badBluetoothData);
+#else
+    bool badData = badCalibData;
+#endif
+
   if ((badData == false) && (checkSum ^ Nvd.par.checkSum) == 0xFFFF) {
 #ifdef NVD_DEBUG	
 	dbg_println(("NVD checkSum OK\r\n"));
@@ -83,18 +123,8 @@ void nvd_set_defaults() {
 #endif    
 	}
 
-   
-uint16_t nvd_checksum(void) {
-	uint16_t checkSum = 0;
-	int nBytes = sizeof(NVD_PARAMS)-2;
-	for (int inx = 0; inx < nBytes; inx++) {
-		checkSum ^= (uint16_t)Nvd.buf[inx]; 
-		}
-	return checkSum;
-	}
 	
-	
-void nvd_commit(void) {
+static void nvd_commit(void) {
 	uint16_t checkSum = nvd_checksum();
 	Nvd.par.checkSum = ~checkSum;
 	int nBytes = sizeof(NVD_PARAMS);
@@ -126,3 +156,4 @@ void nvd_save_config_params(CONFIG_PARAMS &cfg) {
 	EEPROM.end();
 	}	
 	
+

@@ -11,16 +11,16 @@ Ticker     Tickr;
 
 extern MPU9250 Mpu9250;
 
-volatile uint32_t BtnPGCCState;
-volatile bool BtnPGCCPressed = false;
-volatile bool BtnPGCCLongPress = false;
+volatile uint32_t BtnPCCState;
+volatile bool BtnPCCPressed = false;
+volatile bool BtnPCCLongPress = false;
 	
 void IRAM_ATTR btn_debounce() {
-   BtnPGCCState = ((BtnPGCCState<<1) | ((uint32_t)BTN_PGCC()) );
-   if ((BtnPGCCState | 0xFFFFFFF0) == 0xFFFFFFF8) {
-     BtnPGCCPressed = true;
+   BtnPCCState = ((BtnPCCState<<1) | ((uint32_t)BTN_PCC()) );
+   if ((BtnPCCState | 0xFFFFFFF0) == 0xFFFFFFF8) {
+     BtnPCCPressed = true;
      }    
-   if (BtnPGCCState == 0) BtnPGCCLongPress = true;
+   if (BtnPCCState == 0) BtnPCCLongPress = true;
    }
 
 	
@@ -31,8 +31,8 @@ void ui_btn_init() {
 		
 
 void ui_btn_clear() {
-   BtnPGCCPressed  = false;
-   BtnPGCCLongPress = false;
+   BtnPCCPressed  = false;
+   BtnPCCLongPress = false;
    }
 
 	
@@ -157,14 +157,14 @@ void ui_calibrate_accel_gyro() {
 		bCalibrateAccel = false;
 		}	
 	dbg_println(("Counting down to gyro calibration"));
-	dbg_println(("Press the PGCC button to enforce accelerometer calibration first"));
+	dbg_println(("Press the PCC button to enforce accelerometer calibration first"));
 	for (int inx = 0; inx < 10; inx++) {
 		delay(500); 
 		dbg_println((10-inx));
 		audio_generate_tone(CALIBRATING_TONE_HZ, 50); 
-		if (digitalRead(pinPGCC) == 0) {
+		if (digitalRead(pinPCC) == 0) {
 			bCalibrateAccel = true;
-			dbg_println(("PGCC button pressed"));
+			dbg_println(("PCC button pressed"));
 			break;
 			}
 		}

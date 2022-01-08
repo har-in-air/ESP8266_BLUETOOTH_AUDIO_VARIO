@@ -58,8 +58,6 @@ extern NVD Nvd;
 
 void nvd_init(void);
 void nvd_set_defaults();
-void nvd_commit(void);
-uint16_t nvd_checksum(void);
 void nvd_save_calib_params(CALIB_PARAMS &calib);
 void nvd_save_config_params(CONFIG_PARAMS &cfg);
 

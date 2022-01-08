@@ -33,21 +33,21 @@ float KfAltitudeCm = 0.0f;
 float KfClimbrateCps  = 0.0f; // filtered climbrate in cm/s
 int32_t AudioCps; // filtered climbrate, rounded to nearest cm/s
 
-// pinPGCC (GPIO9) has an external 10K pullup resistor to VCC
+// pinPCC (GPIO0) has an external 10K pullup resistor to VCC
 // pressing the button  will ground the pin.
-// This button has three different functions : program, configure, and calibrate (PGCC)
+// This button has three different functions : program, configure, and calibrate (PCC)
 // 1. (Program)
-//    Power on the unit with PGCC button pressed. Or with power on, keep 
-//    PGCC pressed and momentarily press the reset button.
+//    Power on the unit with PCC button pressed. Or with power on, keep 
+//    PCC pressed and momentarily press the reset button.
 //    This will put the ESP8266 into programming mode, and you can flash 
 //    the application code from the Arduino IDE.
 // 2. (WiFi Configuration)
-//    After normal power on, immediately press PGCC and keep it pressed. 
+//    After normal power on, immediately press PCC and keep it pressed. 
 //    Wait until you hear a low tone, then release. The unit will now be in WiFi configuration
 //    configuration mode. 
 // 3. (Calibrate)
 //    After normal power on, wait until you hear the battery voltage feedback beeps and
-//    then the countdown to gyroscope calibration. If you press the PGCC button
+//    then the countdown to gyroscope calibration. If you press the PCC button
 //    during the gyro calibration countdown, the unit will start accelerometer calibration first. 
 //    Accelerometer re-calibration is required if the acceleration calibration values in 
 //    flash were never written, or if the entire flash has been erased.
@@ -68,7 +68,7 @@ boolean bWebConfigure = false;
 MPU9250    Mpu9250;
 MS5611     Ms5611;
 
-const char* FirmwareRevision = "1.20";
+const char* FirmwareRevision = "1.21";
 
 // handles data ready interrupt from MPU9250 (every 2ms)
 void IRAM_ATTR drdy_interrupt_handler() {
@@ -181,7 +181,7 @@ void config_bluetooth() {
 #endif        
 
 void setup() {
-	pinMode(pinPGCC, INPUT); //  Program/Configure/Calibrate Button
+	pinMode(pinPCC, INPUT); //  Program/Configure/Calibrate Button
 	wificfg_wifi_off(); // turn off radio to save power
 
 #ifdef TOP_DEBUG    
@@ -195,18 +195,18 @@ void setup() {
 
 	if (!LittleFS.begin()){
 		dbg_println(("Error mounting LittleFS"));
-		return;
+		ESP.restart();
 		}   
 
 	audio_config(pinAudio); 
 
 	bWebConfigure = false;
-	dbg_println(("To start web configuration mode, press and hold the PGCC button"));
+	dbg_println(("To start web configuration mode, press and hold the PCC button"));
 	dbg_println(("until you hear a low-frequency tone. Then release the button"));
 	for (int cnt = 0; cnt < 4; cnt++) {
 		dbg_println((4-cnt));
 		delay(1000);
-		if (digitalRead(pinPGCC) == 0) {
+		if (digitalRead(pinPCC) == 0) {
 			bWebConfigure = true;
 			break;
 			}

@@ -5,13 +5,13 @@
 // Note : with bluetooth feature support you can still enable or disable bluetooth
 // transmission via the WiFi configuration webpage.
 
-#define CFG_BLUETOOTH   true
+#define CFG_BLUETOOTH   false
 #define CFG_L9110S      true
 #define CFG_LANTERN     false
 
 ////////////////////////////////////////////////////////////////////////
 
-#define pinPGCC      0
+#define pinPCC       0
 #define pinSDA       5
 #define pinSCL       4
 #define pinDRDYInt   15
@@ -27,7 +27,7 @@
     #define pinLED       12
 #endif
 
-#define BTN_PGCC()  (GPIP(pinPGCC) ? 1 : 0)
+#define BTN_PCC()  (GPIP(pinPCC) ? 1 : 0)
 
 #define APP_MODE_VARIO   11
 #define APP_MODE_LANTERN 22

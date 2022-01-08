@@ -93,23 +93,25 @@ Battery current drain is `~37mA` operating as audio vario with bluetooth LK8EX1 
 If you want support for louder volume using the L9110S push-pull driver IC, set `CFG_L9110S` to true.   
 * To support bluetooth LK8EX1 transmission with a HM-11 module,set `CFG_BLUETOOTH` to true.
 * To support the torch/lantern feature, set `CFG_LANTERN` to true.
-* In the Arduino IDE, select `Tools->Board->ESP8266 Boards : Generic ESP8266 module`
+* In the Arduino IDE, select `Tools->Board->ESP8266 Boards (3.0.2) : Generic ESP8266 module`
 * Select `Tools->Flash Size : 4MB (FS:1MB OTA:~1019kB)`
 * Select `Tools->CPU Frequency : 80MHz`
 * The first time you flash the ESP8266 with this project code, select `Tools->Erase Flash : All flash contents`. 
-* Next, select the `Tools->ESP8266 LittleFS Data Upload` option. This will build a LittleFS flash partition with the contents of the `/data` directory, and then flash it to the ESP8266. The `/data` directory contains the static HTML and CSS files for the WiFi server webpage.
-* Next, select `Tools->Erase Flash : Only sketch` option. From now on, use this option whether you are uploading the LittleFS partition image or the firmware binary. 
-* Now, build and flash the application firmware. 
-* Ensure the serial debug monitor is visible, then reset or power-cycle the EP8266 module. Since there is no calibration data, you will see a calibration error message. Follow the prompts to calibrate both accelerometer and gyroscope.
-[This is a startup serial monitor log after a full flash erase.](docs/calibration_log.txt). 
-* The gyroscope is re-calibrated each time on power-up. You should leave the vario undisturbed when you hear the count-down beeps for gyroscope calibration. If the vario is disturbed during the gyro calibration process, it will use the last saved gyro calibration parameters.
-* [This is a startup serial monitor log of the vario with calibrated accelerometer.](docs/boot_log.txt). 
+* Build and flash the application firmware. You should see confirmation of full chip erase before flashing the firmware.
+* Select `Tools->Erase Flash : Only sketch` option. From now on, use this option whether you are uploading the LittleFS partition image or the firmware binary. 
+* Select `Tools->ESP8266 LittleFS Data Upload`. This will build a LittleFS flash partition with the contents of the `/data` directory, and then flash it to the ESP8266. The `/data` directory contains the static HTML and CSS files for the WiFi server webpage.
+* Select `Tools->Serial Monitor`, make sure the unit is resting horizontally on a table and reset the EP8266 module. Since there is no calibration data, you will see a calibration error message, followed by accelerometer and gyroscope calibration.
+(You will not have to do anything if the unit is resting horizontally).
+* The gyroscope is re-calibrated each time on power-up due to issues with drift and environmental conditions. You should leave the vario undisturbed when you hear the count-down beeps for gyroscope calibration. If the vario is disturbed during the gyro calibration process (e.g. you turn it on while in flight), it will use the last saved gyro calibration parameters.
+* [This is a build and startup serial monitor log](docs/build_log.txt). 
 * This project uses the KF4D kalman filter algorithm from the [ESP32_IMU_GPS_BARO_VARIO](https://github.com/har-in-air/ESP32_IMU_BARO_GPS_VARIO) project.
-* To put the vario into WiFi configuration mode, switch on the vario and immediately press the `PGCC` button. Keep it pressed until you hear a confirmation tone, then release. You can now connect to the WiFi Access Point `ESP8266Vario` - no password needed. Now, access the url `http://192.168.4.1` in a browser.
-<br>
+* To put the vario into WiFi configuration mode, switch on the vario and immediately press the `PCC` button. Keep it pressed until you hear a confirmation tone, then release. You can now connect to the WiFi Access Point `ESP8266Vario` - no password needed. Now, access the url `http://192.168.4.1` in a browser.
+* Compiled with Bluetooth support
 <img src="docs/wifi_config_webpage.png">
+* Compiled without Bluetooth support
+<img src="docs/wifi_config_webpage_no_bt.png">
 * To update the firmware, access the url `http://192.168.4.1/update`. 
-Upload the new firmware binary `.bin` file. Reboot the vario. Select WiFi configuration mode again, and confirm the firmware revision string has changed (assuming it has been updated along with code changes).<br>
+Upload the new firmware binary `.bin` file. Reboot the vario. Select WiFi configuration mode again, and confirm the firmware revision string has changed (assuming it has been updated along with code changes).
 Note : To export the compiled firmware binary file to the sketch folder, use the `Sketch->Export compiled binary` command.
-<br> 
+
 <img src="docs/firmware_update.png">

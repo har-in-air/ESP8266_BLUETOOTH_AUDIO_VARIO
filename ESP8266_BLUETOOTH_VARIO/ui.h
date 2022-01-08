@@ -1,8 +1,8 @@
 #ifndef UI_H_
 #define UI_H_
 
-extern volatile bool BtnPGCCPressed;
-extern volatile bool BtnPGCCLongPress;
+extern volatile bool BtnPCCPressed;
+extern volatile bool BtnPCCLongPress;
 
 void ui_indicate_uncalibrated_accel_gyro();
 void ui_indicate_sleep();

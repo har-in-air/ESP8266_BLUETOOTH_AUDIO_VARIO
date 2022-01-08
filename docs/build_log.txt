@@ -1,0 +1,340 @@
+--------------------------------------------------------------
+ Select Flash -> Erase Flash (All Contents)
+ -------------------------------------------------------------
+ 
+
+-------------------------------------------------------------
+Build and Upload (completely erase ESP8266 flash and flash application firmware)
+-------------------------------------------------------------
+Executable segment sizes:
+ICACHE : 32768           - flash instruction cache 
+IROM   : 401424          - code in flash         (default or ICACHE_FLASH_ATTR) 
+IRAM   : 30101   / 32768 - code in IRAM          (IRAM_ATTR, ISRs...) 
+DATA   : 1524  )         - initialized variables (global, static) in RAM/HEAP 
+RODATA : 6192  ) / 81920 - constants             (global, static) in RAM/HEAP 
+BSS    : 27264 )         - zeroed variables      (global, static) in RAM/HEAP 
+Sketch uses 439241 bytes (42%) of program storage space. Maximum is 1044464 bytes.
+Global variables use 34980 bytes (42%) of dynamic memory, leaving 46940 bytes for local variables. Maximum is 81920 bytes.
+esptool.py v3.0
+Serial port /dev/ttyUSB0
+Connecting....
+Chip is ESP8266EX
+Features: WiFi
+Crystal is 26MHz
+MAC: 18:fe:34:d4:c1:a6
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Auto-detected Flash size: 4MB
+Erasing flash (this may take a while)...
+Chip erase completed successfully in 7.4s
+Compressed 443392 bytes to 332659...
+Writing at 0x00000000... (4 %)
+Writing at 0x00004000... (9 %)
+Writing at 0x00008000... (14 %)
+Writing at 0x0000c000... (19 %)
+Writing at 0x00010000... (23 %)
+Writing at 0x00014000... (28 %)
+Writing at 0x00018000... (33 %)
+Writing at 0x0001c000... (38 %)
+Writing at 0x00020000... (42 %)
+Writing at 0x00024000... (47 %)
+Writing at 0x00028000... (52 %)
+Writing at 0x0002c000... (57 %)
+Writing at 0x00030000... (61 %)
+Writing at 0x00034000... (66 %)
+Writing at 0x00038000... (71 %)
+Writing at 0x0003c000... (76 %)
+Writing at 0x00040000... (80 %)
+Writing at 0x00044000... (85 %)
+Writing at 0x00048000... (90 %)
+Writing at 0x0004c000... (95 %)
+Writing at 0x00050000... (100 %)
+Wrote 443392 bytes (332659 compressed) at 0x00000000 in 7.5 seconds (effective 472.2 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...
+
+
+
+------------------------------------------
+ Select Flash -> Erase Flash (Sketch Only)
+------------------------------------------
+
+--------------------------------------------------------------
+ Select Tools -> ESP8266 LittleFS Data Upload
+ to build the LittleFS partition from /data contents and flash it.
+-------------------------------------------------------------- 
+[LittleFS] data    : /home/hari/Arduino/ESP8266/ESP8266_BLUETOOTH_AUDIO_VARIO/ESP8266_BLUETOOTH_VARIO/data
+[LittleFS] size    : 1000
+[LittleFS] page    : 256
+[LittleFS] block   : 8192
+/style.css
+/index.html
+[LittleFS] upload  : /tmp/arduino_build_417258/ESP8266_BLUETOOTH_VARIO.mklittlefs.bin
+[LittleFS] address : 0x300000
+[LittleFS] reset   : --before default_reset --after hard_reset
+[LittleFS] port    : /dev/ttyUSB0
+[LittleFS] speed   : 460800
+[LittleFS] python   : /home/hari/.arduino15/packages/esp8266/tools/python3/3.7.2-post1/python3
+[LittleFS] uploader : /home/hari/.arduino15/packages/esp8266/hardware/esp8266/3.0.2/tools/upload.py
+
+esptool.py v3.0
+Serial port /dev/ttyUSB0
+Connecting....
+Chip is ESP8266EX
+Features: WiFi
+Crystal is 26MHz
+MAC: 18:fe:34:d4:c1:a6
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Auto-detected Flash size: 4MB
+Compressed 1024000 bytes to 3022...
+Writing at 0x00300000... (100 %)
+Wrote 1024000 bytes (3022 compressed) at 0x00300000 in 0.1 seconds (effective 102371.7 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...
+
+-----------------------------
+ Tools->Serial Monitor
+ Press reset for first boot
+---------------------------- 
+
+ESP8266 BLUETOOTH VARIO compiled on Jan  8 2022 at 11:19:51
+Firmware Revision 1.21
+
+Checking non-volatile data (calibration and configuration)
+Sizeof(NVD_PARAMS) = 28 bytes
+Calculated checkSum = 0xc202
+Saved checkSum = ~0xc202
+NVD checkSum OK
+
+ACCEL & GYRO Calibration Values
+axBias = 0
+ayBias = 0
+azBias = 0
+gxBias = 0
+gyBias = 0
+gzBias = 0
+VARIO
+climbThresholdCps = 50
+zeroThresholdCps = 5
+sinkThresholdCps = -250
+crossoverCps = 400
+KALMAN FILTER
+accelVariance = 100
+zMeasVariance = 200
+MISCELLANEOUS
+sleepTimeoutMinutes = 15
+To start web configuration mode, press and hold the PCC button
+until you hear a low-frequency tone. Then release the button
+4
+3
+2
+1
+
+Battery voltage = 4.05V
+Vario mode
+
+Checking communication with MS5611
+MS5611 PROM CRC = 0x9
+Calculated CRC = 0x9
+MS5611 OK
+
+Checking communication with MPU9250
+MPU9250 OK
+Calibration parameters from NVD
+Accel : axBias 0, ayBias 0, azBias 0
+Gyro : gxBias 0, gyBias 0, gzBias 0
+! Uncalibrated accelerometer !
+Starting accelerometer calibration
+-- Accelerometer calibration --
+Place vario on a level surface with accelerometer z axis vertical and leave it undisturbed
+You have 10 seconds, counted down with rapid beeps from 50 to 0
+50
+49
+48
+47
+46
+45
+44
+43
+42
+41
+40
+39
+38
+37
+36
+35
+34
+33
+32
+31
+30
+29
+28
+27
+26
+25
+24
+23
+22
+21
+20
+19
+18
+17
+16
+15
+14
+13
+12
+11
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+
+Calibrating accelerometer
+ax = -78  ay = -158  az = 8300
+axBias = -78
+ayBias = -158
+azBias = 108
+Accelerometer calibration done
+Counting down to gyro calibration
+Press the PCC button to enforce accelerometer calibration first
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+
+Calibrating gyro
+Num Tries = 1
+gxBias = 23
+gyBias = -9
+gzBias = 22
+Gyro calibration OK
+
+MS5611 config
+MS5611 Calibration Coeffs : 48939 50595 29263 26380 30963 26826
+Tavg : 30C
+Pavg : 91596Pa
+Zavg : 84323cm
+
+KalmanFilter config
+climbToneCps = 50
+zeroesToneCps = 5
+sinkToneCps = -250
+crossoverCps = 400
+
+Starting Vario
+
+------------------------------------------------------------
+Press reset again (normal, accelerometer calibrated boot)
+-----------------------------------------------------------
+
+ESP8266 BLUETOOTH VARIO compiled on Jan  8 2022 at 11:19:51
+Firmware Revision 1.21
+
+Checking non-volatile data (calibration and configuration)
+Sizeof(NVD_PARAMS) = 28 bytes
+Calculated checkSum = 0xbe5b
+Saved checkSum = ~0xbe5b
+NVD checkSum OK
+
+ACCEL & GYRO Calibration Values
+axBias = -78
+ayBias = -158
+azBias = 108
+gxBias = 23
+gyBias = -9
+gzBias = 22
+VARIO
+climbThresholdCps = 50
+zeroThresholdCps = 5
+sinkThresholdCps = -250
+crossoverCps = 400
+KALMAN FILTER
+accelVariance = 100
+zMeasVariance = 200
+MISCELLANEOUS
+sleepTimeoutMinutes = 15
+To start web configuration mode, press and hold the PCC button
+until you hear a low-frequency tone. Then release the button
+4
+3
+2
+1
+
+Battery voltage = 4.05V
+Vario mode
+
+Checking communication with MS5611
+MS5611 PROM CRC = 0x9
+Calculated CRC = 0x9
+MS5611 OK
+
+Checking communication with MPU9250
+MPU9250 OK
+Calibration parameters from NVD
+Accel : axBias -78, ayBias -158, azBias 108
+Gyro : gxBias 23, gyBias -9, gzBias 22
+Counting down to gyro calibration
+Press the PCC button to enforce accelerometer calibration first
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+
+Calibrating gyro
+Num Tries = 1
+gxBias = 21
+gyBias = -10
+gzBias = 23
+Gyro calibration OK
+
+MS5611 config
+MS5611 Calibration Coeffs : 48939 50595 29263 26380 30963 26826
+Tavg : 29C
+Pavg : 91594Pa
+Zavg : 84339cm
+
+KalmanFilter config
+climbToneCps = 50
+zeroesToneCps = 5
+sinkToneCps = -250
+crossoverCps = 400
+
+Starting Vario
+
+
+
