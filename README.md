@@ -134,10 +134,12 @@ To put the vario into WiFi AP server mode, switch on the vario and immediately p
 
 You can now connect to the WiFi Access Point `ESP8266Vario` - no password needed. Now, access the url `http://192.168.4.1` in a browser.
 
-Compiled with Bluetooth support
+Compiled with Bluetooth support : 
+<br>
 <img src="docs/wifi_config_webpage.png">
 
-Compiled without Bluetooth support
+Compiled without Bluetooth support : 
+<br>
 <img src="docs/wifi_config_webpage_no_bt.png">
 
 ## OTA Firmware Update
