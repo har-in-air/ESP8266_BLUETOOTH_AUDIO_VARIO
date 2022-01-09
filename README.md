@@ -1,7 +1,6 @@
 # ESP8266_BLUETOOTH_AUDIO_VARIO
 
-## Features
-* Accurate, zero-lag audio feedback variometer using Kalman filter fusion of accelerometer and pressure sensor data
+* Accurate, zero-lag audio feedback variometer using Kalman filter fusion of accelerometer and pressure sensor data. This project uses the KF4D kalman filter algorithm from the [ESP32_IMU_GPS_BARO_VARIO](https://github.com/har-in-air/ESP32_IMU_BARO_GPS_VARIO) project.
 * WiFi webpage configuration with the vario acting as an access point and web server.
 * WiFi Over-the-air (OTA) firmware update 
 * You can build a minimal audio vario with the above functionality. Or you can add optional features :
@@ -11,7 +10,7 @@ flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tabl
     * Torch/lantern mode using a 0.5W white led. This is accessed with a long press of a button when the unit is in vario mode. Once in lantern mode, you can cycle through 3 different brightness levels and an S.O.S. flasher mode.
 * PCB design with same form factor as a single-cell 18650 power bank case. 
 
-## Software Build Environment 
+# Software Build Environment 
 * Ubuntu 20.04 LTS AMDx64
 * Arduino IDE version 1.8.16
 * External Arduino libraries used (install using Arduino Library Manager) : 
@@ -20,7 +19,7 @@ flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tabl
   * AsyncElegantOTA
 * [Arduino ESP8266 LittleFS Data Upload plugin](https://github.com/earlephilhower/arduino-esp8266littlefs-plugin/releases)
 
-## Hardware
+# Hardware
 
 * ESP-12E/12F module (4Mbytes flash)
 * CJMCU-117 10-DOF IMU module with MPU9250 and MS5611 sensors
@@ -37,8 +36,9 @@ flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tabl
 
 <img src="hw/esp8266_bluetooth_vario_bot.png">
 
-## Hardware Notes
+# Hardware Notes
 
+## HM-11
 I have not used a pcb footprint for the HM-11 module because there are several options for this
 module available on ebay/aliexpress with different pinouts, all called "HM-11".
 
@@ -47,13 +47,17 @@ module available on ebay/aliexpress with different pinouts, all called "HM-11".
 2. JDY-08 "HM-11" clone. This has to be reflashed with HM-10 firmware using a CC debugger adapter. 
 If you do get a JDY-08, and have access to a CC debugger, here are [instructions for reflashing it and the resulting change in pinout.](https://www.iot-experiments.com/jdy-08/)
 
+## NCS pin pullup
 The CJMCU-117 `NCS` pin should be connected with a wire directly to the 
 CJMCU-117  LDO regulator 3.3V output. The pcb already has the connection between `NCS` and `PS` (see the [schematic](hw/esp8266_bluetooth_vario_schematic.pdf)).
 
+## I2C pullup resistors
 The 10K I2C pullup resistors on the CJMCU-117 board should be replaced with 3.3K for a reliable interface at 400kHz.
 
+## LDO regulator specification
 The TLV75533 3.3V LDO regulator has a high current rating of 500mA and is suitable for the ESP8266 power supply, which has high current spikes > 350mA on wifi transmit bursts. You can use it for both LDO regulators on the board. The reason I used a cheaper, more readily available XC6219 3.3V LDO regulator for the HM-11 is because the bluetooth module current draw is low.
 
+## Optional components
 The optional circuit components are marked with dashes on the schematic. Do not populate them if 
 you don't want the torch option or the bluetooth option or the L9110s loud(er) speaker option. 
 
@@ -77,23 +81,35 @@ A few components may not be readily available on Aliexpress/Ebay. You can find t
 * Power switch : ALPS SSSS916400 (good quality, expensive) or SK12D07 (ebay, cheap, cut off the end lugs).
 * For torch LEDs up to 0.5W, populate one of R1, R2 with a 22ohm 2512 0.5W package. For higher wattage LEDs, add a second resistor in parallel. 
 
+## ESP8266 Bootstrap pin quirks
 The ESP8266 has internal power-on bootstrap pullup/pulldown requirements for some of the GPIO pins. These cause circuit quirks on reset and during ROM boot. You will find the torch LED comes on at full brightness when you press the reset button, or put the ESP8266 in program mode.
 
+## Silkscreen interface labels
 The silkscreen markings for the ESP8266 UART are for the connecting component. RXD should be connected to the RX pin on the USB-UART module, and TXD to the TX pin. 
 
 Similarly, the silkscreen markings for the HM-11 interface are for the HM-11 module. The BTRX pad should be connected to the HM-11 RX pin. To reset the HM-11 with factory default settings, short the KEY pad to ground for a couple of seconds.
 
-Battery current drain is `~27mA` operating as audio vario with bluetooth disabled. 
+## Expected current drain
+Battery current drain of `~27mA` operating as audio vario with bluetooth disabled. 
 
 Battery current drain is `~37mA` operating as audio vario with bluetooth LK8EX1 message transmission @ 10Hz.
 
-## Software Build Notes
+If you are using an ESP8266 dev module, expect ~10mA more due to the USB-uart circuitry.
 
-* For a minimal audio vario with the ESP8266 directly driving a piezo transducer, edit the file `config.h` and set `CFG_BLUETOOTH`, `CFG_L9110S` and `CFG_LANTERN` to false.
+## MPU9250 module mounting
+The MPU9250 MEMS chip is sensitive to mechanical stress. You can see this when you calibrate the accelerometer and gyroscope bias offsets - if you press down the module to keep it flat, you will record large offsets. For final mounting of the board module, it's best to use two-sided adhesive foam tape (no screws), this will also help in dampening external vibrations.
+
+# Software Build Notes
+
+## Compile Feature Options
+* Feature support compile options are in `config.h`
+* For a minimal audio vario with the ESP8266 directly driving a piezo transducer, set `CFG_BLUETOOTH`, `CFG_L9110S` and `CFG_LANTERN` to false.
 If you want support for louder volume using the L9110S push-pull driver IC, set `CFG_L9110S` to true.   
-* To support bluetooth LK8EX1 transmission with a HM-11 module,set `CFG_BLUETOOTH` to true.
+* To support bluetooth $LK8EX1 message transmission  with a HM-11 module,set `CFG_BLUETOOTH` to true.
 * To support the torch/lantern feature, set `CFG_LANTERN` to true.
-* In the Arduino IDE, select `Tools->Board->ESP8266 Boards (3.0.2) : Generic ESP8266 module`
+
+## Build Steps
+* In the Arduino IDE v1.8.16, select `Tools->Board->ESP8266 Boards (3.0.2) : Generic ESP8266 module`
 * Select `Tools->CPU Frequency : 80MHz`
 * Select `Tools->Erase Flash : All flash contents`. 
 * Select `Tools->Flash Size : 1MB (FS:1MB OTA:~1019kB)`. Note : we are using a 4MB ESP-12E/F, but first selecting and flashing a different partition format fixes issues with the NVS flash calibration data area not being erased for the first boot.
@@ -109,14 +125,27 @@ If you want support for louder volume using the L9110S push-pull driver IC, set 
 * Press the reset button. This is first boot and there is no calibration data. You will see a checksum error message, followed by automatic accelerometer and gyroscope calibration. (You will not have to do anything if the unit is resting horizontally).
 * The gyroscope is re-calibrated each time on power-up due to issues with drift and environmental conditions. You should leave the vario undisturbed when you hear the count-down beeps for gyroscope calibration. If the vario is disturbed during the gyro calibration process (e.g. you turn it on while in flight), it will use the last saved gyro calibration parameters.
 * [This is a build and startup serial monitor log](docs/build_log.txt).  You should see similar results.
-* This project uses the KF4D kalman filter algorithm from the [ESP32_IMU_GPS_BARO_VARIO](https://github.com/har-in-air/ESP32_IMU_BARO_GPS_VARIO) project.
-* To put the vario into WiFi configuration mode, switch on the vario and immediately press the `PCC` button. Keep it pressed until you hear a confirmation tone, then release. You can now connect to the WiFi Access Point `ESP8266Vario` - no password needed. Now, access the url `http://192.168.4.1` in a browser.
-* Compiled with Bluetooth support
+* If you are using an ESP8266 dev board with circuitry for automatic program and reset (e.g. NodeMCU), you won't get the same logs as I did, as the board will automatically reset after loading the firmware and set zero defaults for the calibration values. It should still work however, as the zero calibration values are detected as 'uncalibrated'. 
+
+# WiFi Configuration and OTA Firmware Updates
+
+## WiFi Configuration
+To put the vario into WiFi AP server mode, switch on the vario and immediately press and hold the `PCC` button. When you hear a confirmation tone, release PCC. 
+
+You can now connect to the WiFi Access Point `ESP8266Vario` - no password needed. Now, access the url `http://192.168.4.1` in a browser.
+
+Compiled with Bluetooth support
 <img src="docs/wifi_config_webpage.png">
-* Compiled without Bluetooth support
+
+Compiled without Bluetooth support
 <img src="docs/wifi_config_webpage_no_bt.png">
-* To update the firmware, access the url `http://192.168.4.1/update`. 
-Upload the new firmware binary `.bin` file. Reboot the vario. Select WiFi configuration mode again, and confirm the firmware revision string has changed (assuming it has been updated along with code changes).
-Note : To export the compiled firmware binary file to the sketch folder, use the `Sketch->Export compiled binary` command.
+
+## OTA Firmware Update
+Use `Sketch->Export compiled binary` to export the compiled firmware binary file to the Arduino sketch folder.
+
+Put the vario into Wifi AP server mode, connect to the AP and access the url `http://192.168.4.1/update`. 
+
+Upload the new firmware binary `.bin` file. Switch the vario off and on again. Select WiFi configuration mode again. If the firmware revision string has been updated in the new firmware binary, you can confirm the updated value in the home page url `http://192.168.4.1`.
 
 <img src="docs/firmware_update.png">
+
