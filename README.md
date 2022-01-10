@@ -133,6 +133,9 @@ If you want support for louder volume using the L9110S push-pull driver IC, set 
 To put the vario into WiFi AP server mode, switch on the vario and immediately press and hold the `PCC` button. When you hear a confirmation tone, release PCC. 
 
 You can now connect to the WiFi Access Point `ESP8266Vario` - no password needed. Now, access the url `http://192.168.4.1` in a browser.
+You can also access the url `http://esp8266.local` with any OS that has mDNS support (MacOS built-in support, Ubuntu - install Avahi, Windows - install Bonjour).
+
+You can configure an external WiFi Access Point SSID and password - then you do not have to switch between your home Wifi network and the vario access point to be able to configure the vario. In the field, if the configured external AP is not available, the vario will default to the stand-alone AP as above. In either case, if your OS has mDNS support, you can use the url `http://esp8266.local` for configuration.
 
 Compiled with Bluetooth support : 
 <br>
@@ -145,7 +148,7 @@ Compiled without Bluetooth support :
 ## OTA Firmware Update
 Use `Sketch->Export compiled binary` to export the compiled firmware binary file to the Arduino sketch folder.
 
-Put the vario into Wifi AP server mode, connect to the AP and access the url `http://192.168.4.1/update`. 
+Put the vario into Wifi configuration mode,  access the url `http://esp8266.local/update` or `http://192.168.4.1/update`.
 
 Upload the new firmware binary `.bin` file. Switch the vario off and on again. Select WiFi configuration mode again. If the firmware revision string has been updated in the new firmware binary, you can confirm the updated value in the home page url `http://192.168.4.1`.
 
