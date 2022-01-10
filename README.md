@@ -157,7 +157,7 @@ Use `Sketch->Export compiled binary` to export the compiled firmware binary file
 
 Put the vario into Wifi configuration mode,  access the url `http://esp8266.local/update` or `http://192.168.4.1/update`.
 
-Upload the new firmware binary `.bin` file. Switch the vario off and on again. Select WiFi configuration mode again. If the firmware revision string has been updated in the new firmware binary, you can confirm the updated value in the home page url `http://192.168.4.1`.
+Upload the new firmware binary `.bin` file. Switch the vario off and on again. Select WiFi configuration mode again. If the firmware revision string has been updated in the new firmware binary, you can confirm the updated value in the home page url `http://esp8266.local` or `http://192.168.4.1`.
 
 <img src="docs/firmware_update.png">
 
