@@ -132,10 +132,17 @@ If you want support for louder volume using the L9110S push-pull driver IC, set 
 ## WiFi Configuration
 To put the vario into WiFi AP server mode, switch on the vario and immediately press and hold the `PCC` button. When you hear a confirmation tone, release PCC. 
 
-You can now connect to the WiFi Access Point `ESP8266Vario` - no password needed. Now, access the url `http://192.168.4.1` in a browser.
-You can also access the url `http://esp8266.local` with any OS that has mDNS support (MacOS built-in support, Ubuntu - install Avahi, Windows - install Bonjour).
+Connect to the WiFi Access Point `ESP8266Vario`, no password needed. 
 
-You can configure an external WiFi Access Point SSID and password - then you do not have to switch between your home Wifi network and the vario access point to be able to configure the vario. In the field, if the configured external AP is not available, the vario will default to the stand-alone AP as above. In either case, if your OS has mDNS support, you can use the url `http://esp8266.local` for configuration.
+Now access the url `http://192.168.4.1` in a browser.
+You can use `http://esp8266.local` with any OS that has mDNS support. MacOS has built-in support. For Ubuntu, install Avahi. For Windows install Bonjour.
+
+You can now configure an external WiFi Access Point SSID and password. Then you do not have to switch between your home WiFi network and the vario Access Point to be able to configure the vario. 
+
+If the external AP is available, the vario will connect to it as a client, and then start the configuration web server. 
+If your OS has mDNS support, use the url `http://esp8266.local` for configuration. Else you will have to watch the serial monitor to find the dynamically assigned IP address.
+
+If the configured external AP is not available (or configured with wrong credentials) the vario will fall back to the stand-alone Access Point and web server. So you can still configure the vario in the field.
 
 Compiled with Bluetooth support : 
 <br>
