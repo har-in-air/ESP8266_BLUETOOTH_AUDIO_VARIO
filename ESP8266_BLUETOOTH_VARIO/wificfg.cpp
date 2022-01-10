@@ -13,18 +13,8 @@
 
 static const char* TAG = "wificfg";
 
-extern const char* FirmwareRevision;
+extern const char* FwRevision;
 
-// For easy testing, have the vario connect to an existing Access Point
-// as a station so you don't have to keep switching between APs to test
-// the vario config web server, and use the internet.
-
-//#define STATION
-
-#ifdef STATION
-const char* szSSID = "";
-const char* szPassword = "";
-#endif
 
 const char* szAPSSID = "Esp8266Vario";
 const char* szAPPassword = "";
@@ -32,6 +22,9 @@ const char* szAPPassword = "";
 AsyncWebServer* pServer = NULL;
 
 static float BatteryVoltage;
+
+static void wifi_start_as_ap();
+static void wifi_start_as_station();
 
 static void server_not_found(AsyncWebServerRequest *request);
 static String server_string_processor(const String& var);
@@ -69,8 +62,16 @@ static String server_string_processor(const String& var){
         }
     else    
     if(var == "FIRMWARE_REVISION"){
-        return FirmwareRevision;
+        return FwRevision;
         }
+	else
+	if(var == "SSID"){
+		return String(Nvd.par.cfg.cred.ssid);
+		}
+	else
+	if(var == "PASSWORD"){
+		return String(Nvd.par.cfg.cred.password);
+		}
     else
     if(var == "BATTERY_VOLTAGE"){
         return String(BatteryVoltage, 1);
@@ -177,45 +178,50 @@ static String server_string_processor(const String& var){
     }
 
 
+static void wifi_start_as_ap() {
+	dbg_printf(("Starting Access Point %s with password %s\n", szAPSSID, szAPPassword));
+	WiFi.softAP(szAPSSID, szAPPassword);
+	IPAddress IP = WiFi.softAPIP();
+    dbg_printf(("AP IP address: "));
+    dbg_println((IP));
+	}
+
+
+static void wifi_start_as_station() {
+	dbg_printf(("Connecting as station to SSID %s\n", Nvd.par.cfg.cred.ssid));
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(Nvd.par.cfg.cred.ssid, Nvd.par.cfg.cred.password);
+    if (WiFi.waitForConnectResult(10000UL) != WL_CONNECTED) {
+        dbg_println(("WiFi connection to AP failed!"));
+    	wifi_start_as_ap();
+    	}
+	else {
+	    dbg_printf(("Local IP : "));
+		dbg_println((WiFi.localIP()));
+		}
+	}
+
+
 void wificfg_ap_server_init() {
     wificfg_wifi_on();  
     delay(100);
-#ifdef STATION  
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(szSSID, szPassword);
-    if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-        dbg_println(("WiFi connection to AP failed!"));
-        return;
-        }
-    dbg_println(());
-    dbg_printf(("Connected as station, IP Address =  "));
-    dbg_println((WiFi.localIP()));
-#else    
-    dbg_println(("Starting Access Point"));
-    // Set the password to "", if you want the AP (Access Point) to be open
-    WiFi.softAP(szAPSSID, szAPPassword);
-
-    IPAddress IP = WiFi.softAPIP();
-    dbg_printf(("AP IP address: "));
-    dbg_println((IP));
-
-    // Print ESP8266 Local IP Address
-    dbg_println((WiFi.localIP()));
-#endif
+	if (strlen(Nvd.par.cfg.cred.ssid) == 0) {
+		wifi_start_as_ap();
+		}
+	else {
+		wifi_start_as_station();
+		}
     if (MDNS.begin("esp8266")) {
-    	Serial.println("MDNS started, connect to http://esp8266.local");
+    	dbg_println(("MDNS started, connect to http://esp8266.local"));
     	}
     pServer = new AsyncWebServer(80);
     pServer->onNotFound(server_not_found);
+    pServer->serveStatic("/", LittleFS, "/");
     // Send web page with input fields to client
     pServer->on("/", HTTP_GET, [](AsyncWebServerRequest *request){
         int adcVal = adc_sample_average();
         BatteryVoltage = adc_battery_voltage(adcVal);
         request->send(LittleFS, "/index.html", String(), false, server_string_processor);
-        });
-
-    pServer->on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send(LittleFS, "/style.css", "text/css");
         });
 
     pServer->on("/defaults", HTTP_GET, [] (AsyncWebServerRequest *request) {
@@ -227,7 +233,7 @@ void wificfg_ap_server_init() {
     pServer->on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
         String inputMessage;
         bool bChange = false;
-        CONFIG_PARAMS cfg;
+		CONFIG_PARAMS_t cfg;		
 #if (CFG_BLUETOOTH == true)       
         if (request->hasParam("bluetooth")) {
             inputMessage = request->getParam("bluetooth")->value();
@@ -235,6 +241,16 @@ void wificfg_ap_server_init() {
             cfg.misc.bluetoothEnable = (inputMessage == "btoff" ? 0 : 1); 
             }
 #endif      
+		if (request->hasParam("ssid")) {
+			inputMessage = request->getParam("ssid")->value();
+			bChange = true; 
+			strcpy(cfg.cred.ssid, inputMessage.c_str());
+			}
+		if (request->hasParam("password")) {
+			inputMessage = request->getParam("password")->value();
+			bChange = true; 
+			strcpy(cfg.cred.password, inputMessage.c_str()); 
+			}
         if (request->hasParam("climbThreshold")) {
             inputMessage = request->getParam("climbThreshold")->value();
             bChange = true; 

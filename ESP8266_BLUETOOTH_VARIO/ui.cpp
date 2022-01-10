@@ -95,7 +95,7 @@ void ui_indicate_battery_voltage() {
    }
    
 
-void ui_calibrate_accel(CALIB_PARAMS &calib) {    
+void ui_calibrate_accel(CALIB_PARAMS_t &calib) {    
     // acknowledge calibration button press with long tone
     audio_generate_tone(CALIBRATING_TONE_HZ, 3000);
     dbg_println(("-- Accelerometer calibration --"));
@@ -113,7 +113,7 @@ void ui_calibrate_accel(CALIB_PARAMS &calib) {
     }
 
 
-void ui_calibrate_gyro(CALIB_PARAMS &calib) {    
+void ui_calibrate_gyro(CALIB_PARAMS_t &calib) {    
    dbg_println(("\r\nCalibrating gyro"));
   // normal power-on operation flow, always attempt to calibrate gyro. If calibration isn't possible because 
   // the unit is continuously disturbed (e.g. you turned on the unit while already flying), indicate this and

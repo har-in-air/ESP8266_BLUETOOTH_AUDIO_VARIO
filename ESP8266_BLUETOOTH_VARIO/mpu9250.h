@@ -57,9 +57,9 @@ private :
 	int check_id(void);
 	void get_accel_gyro_data(float* pAccelData, float* pGyroData);
     void config_accel_gyro(void);
-    int  calibrate_gyro(CALIB_PARAMS &calib);
-    void calibrate_accel(CALIB_PARAMS &calib);
-	void get_calib_params(CALIB_PARAMS &calib);
+    int  calibrate_gyro(CALIB_PARAMS_t &calib);
+    void calibrate_accel(CALIB_PARAMS_t &calib);
+	void get_calib_params(CALIB_PARAMS_t &calib);
 	void sleep(void);
     void write_byte(uint8_t deviceID, uint8_t addr, uint8_t val);
     uint8_t read_byte(uint8_t deviceID, uint8_t addr);

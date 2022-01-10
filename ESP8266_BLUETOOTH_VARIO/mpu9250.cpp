@@ -48,7 +48,7 @@ int MPU9250::check_id(void) {
 	return (( whoami == 0x71) ? 1 : 0);
 	}
 	
-void MPU9250::get_calib_params(CALIB_PARAMS &calib) {
+void MPU9250::get_calib_params(CALIB_PARAMS_t &calib) {
 	axBias_ = calib.axBias;
 	ayBias_ = calib.ayBias;
 	azBias_ = calib.azBias;
@@ -113,7 +113,7 @@ void MPU9250::config_accel_gyro(void) {
 
 #define ACCEL_NUM_AVG_SAMPLES	100
 
-void MPU9250::calibrate_accel(CALIB_PARAMS &calib){
+void MPU9250::calibrate_accel(CALIB_PARAMS_t &calib){
 	uint8_t buf[6];
 	int16_t x,y,z;
 	int32_t axAccum, ayAccum, azAccum;
@@ -148,7 +148,7 @@ void MPU9250::calibrate_accel(CALIB_PARAMS &calib){
 
 #define GYRO_NUM_CALIB_SAMPLES			50
 	
-int MPU9250::calibrate_gyro(CALIB_PARAMS &calib){
+int MPU9250::calibrate_gyro(CALIB_PARAMS_t &calib){
 	uint8_t buf[6];
 	int16_t gx,gy,gz;
 	int32_t gxAccum, gyAccum, gzAccum;

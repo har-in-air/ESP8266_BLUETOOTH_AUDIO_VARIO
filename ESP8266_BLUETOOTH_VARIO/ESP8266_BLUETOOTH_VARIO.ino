@@ -68,7 +68,7 @@ boolean bWebConfigure = false;
 MPU9250    Mpu9250;
 MS5611     Ms5611;
 
-const char* FirmwareRevision = "1.21";
+const char* FwRevision = "1.30";
 
 // handles data ready interrupt from MPU9250 (every 2ms)
 void IRAM_ATTR drdy_interrupt_handler() {
@@ -180,6 +180,7 @@ void config_bluetooth() {
    }
 #endif        
 
+
 void setup() {
 	pinMode(pinPCC, INPUT); //  Program/Configure/Calibrate Button
 	wificfg_wifi_off(); // turn off radio to save power
@@ -189,7 +190,7 @@ void setup() {
 #endif
   
 	dbg_printf(("\r\n\r\nESP8266 BLUETOOTH VARIO compiled on %s at %s\r\n", __DATE__, __TIME__));
-	dbg_printf(("Firmware Revision %s\r\n", FirmwareRevision));
+	dbg_printf(("Firmware Revision %s\r\n", FwRevision));
 	dbg_println(("\r\nChecking non-volatile data (calibration and configuration)"));  
 	nvd_init();
 
@@ -342,7 +343,7 @@ void vario_loop() {
 			}
 		}	
 #if (CFG_LANTERN == true)
-	if (BtnPGCCLongPress == true) {
+	if (BtnPCCLongPress == true) {
 		AppMode = APP_MODE_LANTERN;
 		setup_lantern();
 		delay(500);
@@ -354,7 +355,7 @@ void vario_loop() {
 #if (CFG_LANTERN == true)
 void lantern_loop() {
 	int count;
-	if (BtnPGCCPressed) {
+	if (BtnPCCPressed) {
 		ui_btn_clear();
 		LanternState++;
 		if (LanternState > 4) {
@@ -368,7 +369,7 @@ void lantern_loop() {
 	// flash S.O.S. pattern
 		count = 3;
 		while (count--) {
-			if (BtnPGCCPressed) return;
+			if (BtnPCCPressed) return;
 			analogWrite(pinLED, 1023);
 			delay(50);
 			analogWrite(pinLED, 0);
@@ -376,12 +377,12 @@ void lantern_loop() {
 			}
 		count = 12;
 		while (count--) {
-			if (BtnPGCCPressed) return;
+			if (BtnPCCPressed) return;
 			delay(50);        
 			}
 		count = 3;
 		while (count--) {
-			if (BtnPGCCPressed) return;
+			if (BtnPCCPressed) return;
 			analogWrite(pinLED, 1023);
 			delay(1000);
 			analogWrite(pinLED, 0);
@@ -389,12 +390,12 @@ void lantern_loop() {
 			}
 		count = 12;
 		while (count--) {
-			if (BtnPGCCPressed) return;
+			if (BtnPCCPressed) return;
 			delay(50);        
 			}
 		count = 3;
 		while (count--) {
-			if (BtnPGCCPressed) return;
+			if (BtnPCCPressed) return;
 			analogWrite(pinLED, 1023);
 			delay(50);
 			analogWrite(pinLED, 0);
@@ -402,7 +403,7 @@ void lantern_loop() {
 			}
 		count = 80;
 		while (count--) {
-			if (BtnPGCCPressed) return;
+			if (BtnPCCPressed) return;
 			delay(50);
 			}    
 		}

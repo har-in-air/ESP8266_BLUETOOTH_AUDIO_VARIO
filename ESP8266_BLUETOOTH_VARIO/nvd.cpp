@@ -6,7 +6,7 @@
 
 // saves and retrieves non-volatile data (NVD) to / from ESP8266 flash. 
 
-NVD Nvd;
+NVD_t Nvd;
 
 // crc16  :  https://www.embeddedrelated.com/showcode/295.php
 #define CRC16_DNP	0x3D65		// DNP, IEC 870, M-BUS, wM-BUS, ...
@@ -34,7 +34,7 @@ static uint16_t crc16(uint16_t crcValue, uint8_t newByte) {
 static uint16_t nvd_checksum(void){
 	//uint16_t crc = 0xFFFF; // CCITT
 	uint16_t crc = 0x0000; // DNP
-	int nBytes = sizeof(NVD_PARAMS)-2;
+	int nBytes = sizeof(NVD_PARAMS_t)-2;
 	for (int inx = 0; inx < nBytes; inx++) {
 		crc = crc16(crc, Nvd.buf[inx]); 
 		}
@@ -50,7 +50,7 @@ void nvd_init(void)   {
 		}
 	uint16_t checkSum = nvd_checksum();	
 #ifdef NVD_DEBUG	
-    dbg_printf(("Sizeof(NVD_PARAMS) = %d bytes\r\n", sizeof(NVD_PARAMS)));
+    dbg_printf(("Sizeof(NVD_PARAMS_t) = %d bytes\r\n", sizeof(NVD_PARAMS_t)));
 	dbg_printf(("Calculated checkSum = 0x%04x\r\n", checkSum));	
 	dbg_printf(("Saved checkSum = ~0x%04x\r\n", ~Nvd.par.checkSum&0xFFFF));
 #endif
@@ -65,6 +65,9 @@ void nvd_init(void)   {
   if ((badData == false) && (checkSum ^ Nvd.par.checkSum) == 0xFFFF) {
 #ifdef NVD_DEBUG	
 	dbg_println(("NVD checkSum OK\r\n"));
+	dbg_println(("WiFi Credentials"));
+	dbg_printf(("SSID = %s\r\n", Nvd.par.cfg.cred.ssid));
+
 	dbg_println(("ACCEL & GYRO Calibration Values"));
 	dbg_printf(("axBias = %d\r\n", Nvd.par.calib.axBias));
 	dbg_printf(("ayBias = %d\r\n", Nvd.par.calib.ayBias));
@@ -102,6 +105,9 @@ void nvd_init(void)   {
 
 
 void nvd_set_defaults() {
+	memset(Nvd.par.cfg.cred.ssid, 0, 30);
+	memset(Nvd.par.cfg.cred.password, 0, 30);
+
     Nvd.par.calib.axBias = 0;
     Nvd.par.calib.ayBias = 0;
     Nvd.par.calib.azBias = 0;
@@ -127,7 +133,7 @@ void nvd_set_defaults() {
 static void nvd_commit(void) {
 	uint16_t checkSum = nvd_checksum();
 	Nvd.par.checkSum = ~checkSum;
-	int nBytes = sizeof(NVD_PARAMS);
+	int nBytes = sizeof(NVD_PARAMS_t);
 	for  (int inx = 0; inx < nBytes; inx++){
 		EEPROM.write(inx, Nvd.buf[inx]);
 		}
@@ -135,8 +141,8 @@ static void nvd_commit(void) {
 	}
 	
 
-void nvd_save_calib_params(CALIB_PARAMS &calib) {
-	EEPROM.begin(sizeof(NVD_PARAMS));
+void nvd_save_calib_params(CALIB_PARAMS_t &calib) {
+	EEPROM.begin(sizeof(NVD_PARAMS_t));
 	Nvd.par.calib.axBias = calib.axBias;
 	Nvd.par.calib.ayBias = calib.ayBias;
 	Nvd.par.calib.azBias = calib.azBias;
@@ -147,11 +153,12 @@ void nvd_save_calib_params(CALIB_PARAMS &calib) {
 	EEPROM.end();
 	}	
 	
-void nvd_save_config_params(CONFIG_PARAMS &cfg) {
-	EEPROM.begin(sizeof(NVD_PARAMS));
-	memcpy(&Nvd.par.cfg.vario, &cfg.vario, sizeof(VARIO_PARAMS));
-	memcpy(&Nvd.par.cfg.kf, &cfg.kf, sizeof(KALMAN_FILTER_PARAMS));
-	memcpy(&Nvd.par.cfg.misc, &cfg.misc, sizeof(MISC_PARAMS));
+void nvd_save_config_params(CONFIG_PARAMS_t &cfg) {
+	EEPROM.begin(sizeof(NVD_PARAMS_t));
+	memcpy(&Nvd.par.cfg.cred, &cfg.cred, sizeof(WIFI_CRED_t));
+	memcpy(&Nvd.par.cfg.vario, &cfg.vario, sizeof(VARIO_PARAMS_t));
+	memcpy(&Nvd.par.cfg.kf, &cfg.kf, sizeof(KALMAN_FILTER_PARAMS_t));
+	memcpy(&Nvd.par.cfg.misc, &cfg.misc, sizeof(MISC_PARAMS_t));
 	nvd_commit();
 	EEPROM.end();
 	}	
