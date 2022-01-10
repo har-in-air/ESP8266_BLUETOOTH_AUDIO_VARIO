@@ -2,6 +2,7 @@
 #include <Wire.h>
 #include <FS.h>
 #include <LittleFS.h>
+#include <ESP8266mDNS.h>
 #include "config.h"
 #include "util.h"
 #include "imu.h"
@@ -413,7 +414,7 @@ void lantern_loop() {
 
 void loop(){
 	if (bWebConfigure == true) {
-		// nothing to do here
+		MDNS.update();
 		}
 	else { 
 		switch (AppMode) {

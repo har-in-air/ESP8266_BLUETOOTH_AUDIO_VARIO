@@ -235,11 +235,11 @@ void wificfg_ap_server_init() {
         bool bChange = false;
 		CONFIG_PARAMS_t cfg;		
 #if (CFG_BLUETOOTH == true)       
-        if (request->hasParam("bluetooth")) {
-            inputMessage = request->getParam("bluetooth")->value();
-            bChange = true; 
-            cfg.misc.bluetoothEnable = (inputMessage == "btoff" ? 0 : 1); 
-            }
+		if (request->hasParam("bluetooth")) {
+			inputMessage = request->getParam("bluetooth")->value();
+			bChange = true; 
+			cfg.misc.bluetoothEnable = (inputMessage == "btoff" ? 0 : 1); 
+			}
 #endif      
 		if (request->hasParam("ssid")) {
 			inputMessage = request->getParam("ssid")->value();
@@ -251,7 +251,7 @@ void wificfg_ap_server_init() {
 			bChange = true; 
 			strcpy(cfg.cred.password, inputMessage.c_str()); 
 			}
-        if (request->hasParam("climbThreshold")) {
+		if (request->hasParam("climbThreshold")) {
             inputMessage = request->getParam("climbThreshold")->value();
             bChange = true; 
             cfg.vario.climbThresholdCps = inputMessage.toInt();

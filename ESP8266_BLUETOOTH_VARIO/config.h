@@ -5,7 +5,7 @@
 // Note : with bluetooth feature support you can still enable or disable bluetooth
 // transmission via the WiFi configuration webpage.
 
-#define CFG_BLUETOOTH   true
+#define CFG_BLUETOOTH   false
 #define CFG_L9110S      true
 #define CFG_LANTERN     te
 
