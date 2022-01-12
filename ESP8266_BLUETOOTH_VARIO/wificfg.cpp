@@ -211,8 +211,8 @@ void wificfg_ap_server_init() {
 	else {
 		wifi_start_as_station();
 		}
-    if (MDNS.begin("esp8266")) {
-    	dbg_println(("MDNS started, connect to http://esp8266.local"));
+    if (MDNS.begin("vario")) {
+    	dbg_println(("MDNS started, connect to http://vario.local"));
     	}
     pServer = new AsyncWebServer(80);
     pServer->onNotFound(server_not_found);
