@@ -121,11 +121,11 @@ If you want support for louder volume using the L9110S push-pull driver IC, set 
 * Select `Tools->Erase Flash : Only sketch` option. From now on, use this option whether you are uploading the LittleFS partition image or the firmware binary. 
 * Press and hold the PCC button. Momentarily press the Reset button. Release the PCC button. Now the ESP8266 will be in download mode.
 * Select `Tools->ESP8266 LittleFS Data Upload`. This will build a LittleFS flash partition with the contents of the `/data` directory, and then flash it to the ESP8266. The `/data` directory contains the static HTML and CSS files for the WiFi server webpage.
-* Select `Tools->Serial Monitor`, make sure the unit is resting horizontally on a table.
-* Press the reset button. This is first boot and there is no calibration data. You will see a checksum error message, followed by automatic accelerometer and gyroscope calibration. (You will not have to do anything if the unit is resting horizontally).
-* The gyroscope is re-calibrated each time on power-up due to issues with drift and environmental conditions. You should leave the vario undisturbed when you hear the count-down beeps for gyroscope calibration. If the vario is disturbed during the gyro calibration process (e.g. you turn it on while in flight), it will use the last saved gyro calibration parameters.
+* Select `Tools->Serial Monitor`, make sure the unit is resting horizontally on a table. For accelerometer calibration, the MPU9250 sensor needs to be horizontal with the x and y axes flat and the z axis pointing vertically. 
+* Press the reset button. This is first boot and there is no calibration data. You will see a checksum error message, followed by automatic accelerometer and gyroscope calibration. You will not have to do anything if the unit is resting horizontally. Accelerometer calibration needs to be done only once, even if you flash updated firmware / LittleFS data, as long as the firmware update has not changed the calibration flash data structure.
+* The gyroscope is re-calibrated each time on power-up due to issues with drift and environmental conditions. When you hear the count-down beeps for gyroscope calibration, ensure the vario is un-disturbed, in any orientation. If the vario is disturbed during the gyro calibration process (e.g. you turn it on while in flight), it will use the last saved gyro calibration parameters.
 * [This is a build and startup serial monitor log](docs/build_log.txt).  You should see similar results.
-* If you are using an ESP8266 dev board with circuitry for automatic program and reset (e.g. NodeMCU), you won't get the same logs as I did, as the board will automatically reset after loading the firmware and set zero defaults for the calibration values. It should still work however, as the zero calibration values are detected as 'uncalibrated'. 
+* If you are using an ESP8266 development board with circuitry for automatic program and reset (e.g. NodeMCU), the board will automatically restart after loading the firmware and set zeros for the calibration values. So you won't get the same serial monitor logs as I did. But it will still work, as the zero values are detected as 'uncalibrated' and you will see a message to prepare the vario for accelerometer calibration. 
 
 # WiFi Configuration and OTA Firmware Updates
 
@@ -135,12 +135,12 @@ To put the vario into WiFi AP server mode, switch on the vario and immediately p
 Connect to the WiFi Access Point `ESP8266Vario`, no password needed. 
 
 Now access the url `http://192.168.4.1` in a browser.
-You can use `http://esp8266.local` with any OS that has mDNS support. MacOS has built-in support. For Ubuntu, install Avahi. For Windows install Bonjour.
+You can use `http://vario.local` with any OS that has mDNS support. MacOS has built-in support. For Ubuntu, install Avahi. For Windows install Bonjour.
 
-You can now configure an external WiFi Access Point SSID and password. Then you do not have to switch between your home WiFi network and the vario Access Point to be able to configure the vario. 
+You can now configure an external WiFi Access Point SSID and password. Then you do not have to switch between your home WiFi network and the vario Access Point to be able to configure the vario. After configuration, restart the vario and trigger wifi configuration mode again.
 
-If the external AP is available, the vario will connect to it as a client, and then start the configuration web server. 
-If your OS has mDNS support, use the url `http://esp8266.local` for configuration. Else you will have to watch the serial monitor to find the dynamically assigned IP address.
+Now if the external Access Point is available, the vario will connect to it as a client, and then start the configuration web server. 
+If your OS has mDNS support, use the url `http://vario.local` for configuration. Else you will have to watch the serial monitor to find the dynamically assigned IP address.
 
 If the configured external AP is not available (or configured with wrong credentials) the vario will fall back to the stand-alone Access Point and web server. So you can still configure the vario in the field.
 
@@ -155,9 +155,9 @@ Compiled without Bluetooth support :
 ## OTA Firmware Update
 Use `Sketch->Export compiled binary` to export the compiled firmware binary file to the Arduino sketch folder.
 
-Put the vario into Wifi configuration mode,  access the url `http://esp8266.local/update` or `http://192.168.4.1/update`.
+Put the vario into Wifi configuration mode,  access the url `http://192.168.4.1/update` (`http://vario.local/update`).
 
-Upload the new firmware binary `.bin` file. Switch the vario off and on again. Select WiFi configuration mode again. If the firmware revision string has been updated in the new firmware binary, you can confirm the updated value in the home page url `http://esp8266.local` or `http://192.168.4.1`.
+Upload the new firmware binary `.bin` file. Switch the vario off and on again. Select WiFi configuration mode again. If the firmware revision string has been updated in the new firmware binary, you can confirm the updated value in the home page url `http://192.168.4.1` (`http://vario.local`).
 
 <img src="docs/firmware_update.png">
 
