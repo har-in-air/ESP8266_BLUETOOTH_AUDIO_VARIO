@@ -25,14 +25,13 @@ int      AppMode;
 
 uint32_t TimePreviousUs;
 uint32_t TimeNowUs;
-float 	 ImuTimeDeltaUSecs; // time between imu samples, in microseconds
+float 	 ImuTimeDeltaUSecs; // time between MPU9250 samples, in microseconds
 float 	 KfTimeDeltaUSecs; // time between kalman filter updates, in microseconds
 
 float AccelmG[3]; // in milli-Gs
 float GyroDps[3];  // in degrees/second
-float KfAltitudeCm = 0.0f;
-float KfClimbrateCps  = 0.0f; // filtered climbrate in cm/s
-int32_t AudioCps; // filtered climbrate, rounded to nearest cm/s
+float KfAltitudeCm = 0.0f; // kalman filtered altitude in cm
+float KfClimbrateCps  = 0.0f; // kalman filtered climbrate in cm/s
 
 // pinPCC (GPIO0) has an external 10K pullup resistor to VCC
 // pressing the button  will ground the pin.
@@ -69,7 +68,7 @@ boolean bWebConfigure = false;
 MPU9250    Mpu9250;
 MS5611     Ms5611;
 
-const char* FwRevision = "1.30";
+const char* FwRevision = "1.31";
 
 // handles data ready interrupt from MPU9250 (every 2ms)
 void IRAM_ATTR drdy_interrupt_handler() {
@@ -105,7 +104,7 @@ void setup_vario() {
   
 	dbg_println(("\r\nChecking communication with MPU9250"));
 	if (!Mpu9250.check_id()) {
-		dbg_println(("Error reading Mpu9250 WHO_AM_I register"));
+		dbg_println(("Error reading MPU9250 WHO_AM_I register"));
 		Serial.flush();
 		ui_indicate_fault_MPU9250();
 		ui_go_to_sleep();   // switch off and then on to fix this
@@ -133,7 +132,7 @@ void setup_vario() {
 	Ms5611.init_sample_state_machine(); // start the pressure & temperature sampling cycle
 
 	dbg_println(("\r\nKalmanFilter config"));
-	// initialize kalman filter with Ms5611meter estimated altitude, estimated initial climbrate = 0.0
+	// initialize kalman filter with Ms5611 estimated altitude, and estimated climbrate = 0
 	kalmanFilter4_configure((float)Nvd.par.cfg.kf.zMeasVariance, 1000.0f*(float)Nvd.par.cfg.kf.accelVariance, true, Ms5611.altitudeCmAvg, 0.0f, 0.0f);
 
 	vaudio_config();  
@@ -253,27 +252,27 @@ void vario_loop() {
 		// accelerometer samples (ax,ay,az) in milli-Gs, gyroscope samples (gx,gy,gz) in degrees/second
 		Mpu9250.get_accel_gyro_data(AccelmG, GyroDps); 
 
-		// We arbitrarily decide that with the power bank lying flat with the pcb on top,
-		// the CJMCU-117 board silkscreen Y points "forward" or "north"  (the side with the HM-11), 
+		// We arbitrarily decide that in the assembled vario, the CJMCU-117 board silkscreen Y points "forward" or "north",
 		// silkscreen X points "right" or "east", and silkscreen Z points down. This is the North-East-Down (NED) 
 		// right-handed coordinate frame used in our AHRS algorithm implementation.
 		// The required mapping from sensor samples to NED frame for our specific board orientation is : 
-		// gxned = gx, gyned = gy, gzned = -gz (clockwise rotations about the axis must result in +ve readings on the axis)
-		// axned = ay, ayned = ax, azned = az (when the axis points down, axis reading must be +ve)
+		// gxned = gx, gyned = gy, gzned = -gz (clockwise rotations about the axis must result in +ve readings on the sensor axis channel)
+		// axned = ay, ayned = ax, azned = az (when the axis points down, sensor axis channel reading must be +ve)
 		// The AHRS algorithm expects rotation rates in radians/second
 		// Acceleration data is only used for orientation correction when the acceleration magnitude is between 0.75G and 1.25G
 		float accelMagnitudeSquared = AccelmG[0]*AccelmG[0] + AccelmG[1]*AccelmG[1] + AccelmG[2]*AccelmG[2];
 		int bUseAccel = ((accelMagnitudeSquared > 562500.0f) && (accelMagnitudeSquared < 1562500.0f)) ? 1 : 0;
         float dtIMU = ImuTimeDeltaUSecs/1000000.0f;
         float gxned = DEG_TO_RAD*GyroDps[0];
-        float gyned = DEG_TO_RAD*GyroDps[0];
-        float gzned = -DEG_TO_RAD*GyroDps[0];
+        float gyned = DEG_TO_RAD*GyroDps[1];
+        float gzned = -DEG_TO_RAD*GyroDps[2];
         float axned = AccelmG[1];
         float ayned = AccelmG[0];
         float azned = AccelmG[2];
 		imu_mahonyAHRS_update6DOF(bUseAccel, dtIMU, gxned, gyned, gzned, axned, ayned, azned);
 		float gCompensatedAccel = imu_gravity_compensated_accel(axned, ayned, azned, Q0, Q1, Q2, Q3);
 		ringbuf_add_sample(gCompensatedAccel);  
+		int32_t audioCps; // filtered climbrate, rounded to nearest cm/s
 
 		BaroCounter++;
 		KfTimeDeltaUSecs += ImuTimeDeltaUSecs;
@@ -290,9 +289,9 @@ void vario_loop() {
 				kalmanFilter4_update(Ms5611.altitudeCm, zAccelAverage, (float*)&KfAltitudeCm, (float*)&KfClimbrateCps);
 				// reset time elapsed between kalman filter algorithm updates
 				KfTimeDeltaUSecs = 0.0f;
-				AudioCps =  KfClimbrateCps >= 0.0f ? (int32_t)(KfClimbrateCps+0.5f) : (int32_t)(KfClimbrateCps-0.5f);
-				vaudio_tick_handler(AudioCps);                
-				if (ABS(AudioCps) > SLEEP_THRESHOLD_CPS) { 
+				audioCps =  KfClimbrateCps >= 0.0f ? (int32_t)(KfClimbrateCps+0.5f) : (int32_t)(KfClimbrateCps-0.5f);
+				vaudio_tick_handler(audioCps);                
+				if (ABS(audioCps) > SLEEP_THRESHOLD_CPS) { 
 					// reset sleep timeout watchdog if there is significant vertical motion
 					SleepTimeoutSecs = 0;
 					}
@@ -316,7 +315,7 @@ void vario_loop() {
 				int adcVal = analogRead(A0);
 				float bv = adc_battery_voltage(adcVal);
 				int altM =  KfAltitudeCm > 0.0f ? (int)((KfAltitudeCm+50.0f)/100.0f) :(int)((KfAltitudeCm-50.0f)/100.0f);
-				btserial_transmit_LK8EX1(altM, AudioCps, bv);
+				btserial_transmit_LK8EX1(altM, audioCps, bv);
 				}
 #endif
 			SleepCounter++;
