@@ -68,7 +68,7 @@ boolean bWebConfigure = false;
 MPU9250    Mpu9250;
 MS5611     Ms5611;
 
-const char* FwRevision = "1.31";
+const char* FwRevision = "1.32";
 
 // handles data ready interrupt from MPU9250 (every 2ms)
 void IRAM_ATTR drdy_interrupt_handler() {

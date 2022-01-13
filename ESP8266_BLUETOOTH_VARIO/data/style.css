@@ -1,39 +1,27 @@
 body{
-	max-width:65%;
-	margin:0 auto;
+	max-width:600px;
+	margin: auto auto;
 	font-family:arial;
-	font-size:100%;
+	font-size:1.0em;
 	text-align:left;
 	color:black;
 	background-color:#d6d0bf;
 	}
 
-ul{
-	list-style-type:none;
-	margin:0.1em;
-	padding:0;
-	border-radius:0.375em;
-	overflow:hidden;
-	background-color:#99CCFF;
-	font-size:1em;
-	}
-
-last-child {
-	border-right:none;
-	font-size:85%
-	}
-
 a:link{
 	color:white;
-	font-size:100%;
+	font-family:arial;
+	font-size:1.0em;
 	text-decoration:none;
 	}
 
 a:hover{
-	color:white;
-	font-size:100%;
+	color:gray;
+	font-family:arial;
+	font-size:1.0em;
 	text-decoration:none;
 	}
+
 
 section {
 	font-size:1.0em;
@@ -43,14 +31,14 @@ h1{
 	color:white;
 	border-radius:0.5em;
 	text-align:center;
-	font-size:1em;
+	font-size:1.0em;
 	padding:0.2em 0.2em;
 	background:#558ED5;
 	}
 
 h2{
 	color:black;
-	font-size:1.0em;
+	font-size: 0.9em;
 	}
 
 h3{
@@ -61,89 +49,39 @@ table{
 	font-family:arial,sans-serif;
 	font-size:1.0em;
 	border-collapse:collapse;
-	width:80%;
+	margin : auto;
 	}
 
-.rcorners_n {
-	border-radius:0.5em;
-	background:#558ED5;
-	padding:0.3em 0.3em;
-	width:20%;
-	color:white;
-	font-size:75%;
+td {
+	text-align: left;
 	}
-	
-.rcorners_m {
-	border-radius:0.5em;
-	background:#558ED5;
-	padding:0.3em 0.3em;
-	width:50%;
-	color:white;
-	font-size:75%;
-	}
-	
-.rcorners_w {
-	border-radius:0.5em;
-	background:#558ED5;
-	padding:0.3em 0.3em;
-	width:70%;
-	color:white;
-	font-size:75%;
-	}
-	
-.column{
-	float:left;
-	width:50%;
-	height:45%;
-	}
-	
-.row:after{
-	content:'';
-	display:table;
-	clear:both;
-	}
-	
-* {
-	box-sizing:border-box;
-	}
-	
-footer {
-	background-color:#009999; 
-	text-align:center;
-	padding:0.3em 0.3em;
-	border-radius:0.375em;
-	font-size:60%;
-	}
-	
+
 button {
-	margin-bottom:1rem;
 	border-radius:0.5em;
 	background:#0066A2;
-	padding:0.3em 0.3em;
+	padding:0.3em 1.0em;
 	align-self:center;
-	width:25%;
 	color:white;
-	font-size:100%;
+	font-size:1.0em;
 	}
 
 input[type="number"] {
 	clear: both;
 	float: left;
-	width: 100px;
+	width: 60px;
 	}
 
 .form-submit-button {
-	margin-bottom:1rem;
 	border-radius:0.5em;
-	padding:0.3em 0.3em;
+	padding:0.3em 1.0em;
 	background:#0066A2;
 	align-self:center;	
+	margin: auto;
 	color:white;
-	width:25%;
-	font-size:100%;
+	font-size:1.0em;
    }
 		
 p {
-	font-size:100%;
+	font-size:1.0em;
 	}
 
