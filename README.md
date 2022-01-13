@@ -112,7 +112,7 @@ If you want support for louder volume using the L9110S push-pull driver IC, set 
 * In the Arduino IDE v1.8.16, select `Tools->Board->ESP8266 Boards (3.0.2) : Generic ESP8266 module`
 * Select `Tools->CPU Frequency : 80MHz`
 * Select `Tools->Erase Flash : All flash contents`. 
-* Select `Tools->Flash Size : 1MB (FS:1MB OTA:~1019kB)`. Note : we are using a 4MB ESP-12E/F, but first selecting and flashing a different partition format fixes issues with the NVS flash calibration data area not being erased for the first boot.
+* Select `Tools->Flash Size : 1MB (FS:None OTA:~502kB)`. Note : we are using a 4MB ESP-12E/F, but first selecting and flashing a different partition format fixes issues with the EEPROM flash calibration data area not being erased for the first boot.
 * Press and hold the PCC button. Momentarily press the Reset button. Release the PCC button. Now the ESP8266 will be in download mode.
 * Flash the application firmware. Results don't matter.
 * Select `Tools->Flash Size : 4MB (FS:1MB OTA:~1019kB)`
